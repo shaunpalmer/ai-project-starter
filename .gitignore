@@ -1,0 +1,56 @@
+# === Secrets & environment ===
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+*~
+
+# === Editors ===
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+
+# === Python ===
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# === Node / TypeScript ===
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# === PHP / Composer ===
+/vendor/
+composer.phar
+.phpunit.result.cache
+
+# === Databases (local) ===
+*.sqlite
+*.sqlite3
+*.db
+
+# === Logs & temp ===
+logs/
+*.log
+tmp/
+output/
+.cache/
