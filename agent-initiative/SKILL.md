@@ -659,6 +659,54 @@ Repair in place first.
 
 Rewrite only when the current design is genuinely wrong, unsafe, or more expensive to repair than replace.
 
+## General Engineering Judgement Rules
+
+The agent must code like a senior developer, not like an autocomplete machine.
+
+When building or repairing code, the agent must watch for common AI failure points: confused load order, mismatched names, weak database design, poor normalization, bad async flow, missing promises, unclear class responsibility, careless CSS, and patterns used either too late or for no reason.
+
+If a pattern is needed, use it deliberately. Pair patterns when they make the design clearer: Factory with Strategy for swappable behavior, Adapter with Service for external APIs, Repository with Service for database-backed business logic, Pipeline with Envelope for staged data processing, and Specification or Validator objects for reusable rules.
+
+Do not write flat procedural code when the project clearly needs structure. Do not write heavy architecture when a simple function is enough. Choose the smallest clean design that can survive the next likely change.
+
+### Common Failure Checks
+
+Before handing back code, check:
+
+* Does load order make sense?
+* Are imports, requires, hooks, and bootstraps in the right place?
+* Do form field names, request keys, database columns, and array keys match?
+* Is database structure normalized enough for the job?
+* Are tables, indexes, and relationships named clearly?
+* Is async TypeScript using `Promise`, `async`, and `await` correctly?
+* Are errors handled instead of silently swallowed?
+* Are classes doing one clear job?
+* Are paired classes working together cleanly?
+* Are utilities extracted when logic repeats?
+* Are dependencies imported at the top?
+* Is CSS modern, maintainable, and free of inline styles?
+* Are CSS variables used for repeated design values?
+* Is Flexbox or Grid used for layout instead of layout hacks?
+* Are libraries used for solved problems instead of weak custom rewrites?
+* Has the agent repaired in place before considering a rewrite?
+
+### Final Engineering Rule
+
+Do not guess your way through engineering.
+
+Trace the flow.
+
+Check the names.
+
+Check the contracts.
+
+Check the data shape.
+
+Check the load order.
+
+Then patch the smallest responsible part.
+
+If the design itself is wrong, explain why, recommend the better architecture, and record the decision before changing direction.
 
 
 ## Final Rule
