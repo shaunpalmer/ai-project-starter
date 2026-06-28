@@ -172,4 +172,131 @@ The correct sequence is:
 4. Record the decision in `AI-NOTES.md`.
 5. Then implement.
 
+## Dependency, Library, and Framework Rules
 
+Do not confuse **libraries** with **frameworks**.
+
+A good library solves a focused problem.
+
+A framework controls the shape of the project.
+
+Shaun does not need to know every library deeply before using it. If a library is mature, project-appropriate, understandable at the call site, and solves a real problem, it may be the best design choice.
+
+Do not rewrite solved problems from scratch just to avoid dependencies.
+
+Use proven libraries for tasks such as:
+
+- HTTP requests
+- HTML parsing
+- Browser automation
+- CSV/JSON handling
+- Fuzzy matching
+- Validation
+- Date/time handling
+- Logging
+- File processing
+- Scraping helpers
+- API clients
+- Testing utilities
+
+Examples:
+
+- Scraping projects may use tools such as Beautiful Soup, Selenium, Playwright, Cheerio, Axios, or equivalent project-appropriate libraries.
+- Data-cleaning projects may use fuzzy matching libraries instead of hand-written matching logic.
+- Automation scripts may use reliable utility libraries where they reduce code, bugs, and maintenance cost.
+
+### Dependency Classification
+
+Before adding a dependency, classify it:
+
+#### 1. Small Utility Library
+
+- Solves one clear problem.
+- Easy to remove or replace.
+- Allowed when useful.
+
+#### 2. Core Project Library
+
+- Used heavily in the project.
+- Must be listed in `TECH-SPEC.md`.
+- Should have clear examples and tests around usage.
+
+#### 3. External Service SDK
+
+- Wrap behind an adapter.
+- Do not scatter direct SDK calls through the codebase.
+
+#### 4. Framework
+
+- Controls project structure, routing, rendering, state, build process, or deployment.
+- Requires stronger justification and Shaun approval.
+
+#### 5. Platform / Infrastructure Choice
+
+- Changes hosting, deployment, runtime, database, queues, containers, or cloud services.
+- Requires explicit approval and architecture update.
+
+### Library Rule
+
+Libraries are allowed when they:
+
+- Solve a real project problem
+- Reduce custom code
+- Are understandable at the usage point
+- Can be wrapped, tested, or isolated
+- Do not force an unfamiliar project structure
+- Do not create unnecessary lock-in
+- Are recorded in `TECH-SPEC.md` when important
+
+### Framework Rule
+
+Frameworks require a higher bar.
+
+Do not introduce React, Next.js, Laravel, Django, complex frontend frameworks, microservice tooling, or heavy build systems unless the project clearly earns that complexity.
+
+Before recommending a framework, explain:
+
+1. What problem it solves.
+2. Why Shaun's known stack is not enough.
+3. What files and commands it adds.
+4. How Shaun will run, debug, and maintain it.
+5. What the simpler version would look like.
+6. Whether the long-term benefit is worth the learning cost.
+
+### Utility Rule
+
+Prefer shared utilities over repeated inline logic.
+
+If the same operation appears more than once, consider moving it into a clear utility function, helper class, adapter, or service.
+
+Utilities should be:
+
+- Named clearly
+- Easy to test
+- Small enough to understand
+- Imported at the top of the file
+- Kept in an obvious location such as `src/utils`, `src/Support`, `includes/helpers`, or the project’s approved equivalent
+
+### Import Rule
+
+Imports, requires, and dependency loading should be hoisted to the top of the file unless the language or runtime has a good reason not to.
+
+Avoid hidden dependencies inside deep functions.
+
+A reader should be able to see what a file depends on before reading the implementation.
+
+### Adapter Rule
+
+If a dependency touches an external service, browser automation, filesystem, database, API, email provider, payment provider, or scraping source, wrap it behind an adapter or service boundary.
+
+Do not let third-party libraries leak through the whole project.
+
+The project should depend on its own interface first, and the third-party library second.
+
+### Final Rule
+
+Use libraries boldly when they reduce risk.
+
+Use frameworks carefully when they change the shape of the project.
+
+Do not make Shaun maintain a project structure he does not understand unless the benefit is deliberate, documented, and approved.
