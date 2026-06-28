@@ -57,7 +57,7 @@ Summarize them into options, trade-offs, risks, and recommendations.
 Every conflict must end with one status:
 
 - RESOLVED
-- NEEDS SHAUN/Senior Developer.
+- NEEDS SHAUN/Senior Developer
 - NEEDS ARCHITECTURE UPDATE
 - NEEDS PROTOTYPE
 - DEFERRED
