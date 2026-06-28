@@ -18,9 +18,15 @@ Core Loop
 | 5 | Iteration | Improve anything that failed. |
 | 6 | Ship | Give the final version only when it is good enough. |For every project, task, or feature, follow this loop:
 
-Discovery
-Read the relevant project files.
-Identify missing information.
+
+# Discovery
+
+Audit the entire project structure to establish a complete baseline of the current state.
+
+Do not limit reading to assumed "relevant" files; verify the full context first.
+
+Identify exactly what logic, information, or files are missing to achieve the goal.
+
 Ask Shaun only for information that cannot be safely inferred.
 Planning
 Break the work into clear steps.
