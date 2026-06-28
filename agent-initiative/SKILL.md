@@ -383,6 +383,284 @@ Ask whether the architecture should be updated.
 
 ---
 
+
+## Repair In Place Rule
+
+When code fails, the agent must repair the existing implementation before starting over.
+
+Do not delete, rewrite, or replace working structure just because one part is broken.
+
+Debugging is a core development skill.
+
+The agent must diagnose the fault, patch the smallest responsible area, and verify the fix.
+
+### Core Rule
+
+Prefer surgical correction over full rewrite.
+
+When a bug appears:
+
+1. Identify the exact failing behavior.
+2. Locate the smallest likely cause.
+3. Check names, paths, imports, hooks, SQL fields, request keys, function signatures, and data shape.
+4. Patch the existing file in place.
+5. Re-run the relevant check.
+6. Only widen the change if the first fix proves the issue is structural.
+
+Do not start again unless the existing implementation is fundamentally wrong.
+
+---
+
+## No Thrashing Rule
+
+The agent must not repeatedly abandon code and recreate it.
+
+Bad behavior:
+
+* “This did not work, so I rewrote the whole file.”
+* “The form failed, so I created a new form.”
+* “The SQL failed, so I rebuilt the plugin structure.”
+* “The hook did not fire, so I moved everything into another file.”
+* “The class name failed, so I changed all class names.”
+
+Good behavior:
+
+* “The form field name does not match the SQL column. I will fix the mapping.”
+* “The nonce check is failing. I will verify the nonce action and field name.”
+* “The repository insert expects `event_type`, but the form sends `type`. I will normalize the input.”
+* “The hook callback is not firing because the class is loaded after the hook registration. I will fix load order.”
+* “The table name is wrong because the prefix constant is inconsistent. I will correct the constant.”
+
+---
+
+## Debugging Ladder
+
+Before rewriting code, use this ladder:
+
+### 1. Read the Error
+
+Check the actual failure:
+
+* PHP fatal error
+* PHP warning or notice
+* JavaScript console error
+* Failed SQL query
+* Failed test
+* Missing hook callback
+* Missing file path
+* Wrong class name
+* Wrong request key
+* Wrong database column
+* Wrong nonce action
+* Wrong capability check
+
+Do not guess before reading the failure.
+
+### 2. Compare Expected vs Actual
+
+Ask:
+
+* What did the code expect?
+* What did it receive?
+* Where did the value change shape?
+* Which name does the form use?
+* Which name does the database expect?
+* Which name does the service expect?
+* Which class or file is actually loaded?
+
+### 3. Patch the Smallest Area
+
+Fix the smallest responsible area first.
+
+Examples:
+
+* Rename one mismatched form field.
+* Correct one SQL column name.
+* Fix one function signature.
+* Add one missing `require_once`.
+* Correct one hook name.
+* Correct one namespace/class name.
+* Fix one path constant.
+* Add one sanitizing or escaping call.
+* Update one repository method.
+
+### 4. Verify
+
+After patching, verify the specific issue.
+
+Do not make unrelated improvements during debugging.
+
+### 5. Escalate Only If Needed
+
+Only widen the fix when the bug proves the current design is structurally wrong.
+
+---
+
+## Rewrite Permission Rule
+
+The agent may only rewrite a file when one of these is true:
+
+* The file is a throwaway prototype.
+* The file is shorter and safer to replace than patch.
+* The current file violates approved architecture.
+* The code is duplicated beyond safe repair.
+* The implementation is fundamentally pointed at the wrong responsibility.
+* Shaun explicitly approves the rewrite.
+* The agent first explains why repair-in-place is worse than replacement.
+
+Before rewriting, the agent must state:
+
+```md
+## Rewrite Justification
+
+### Existing Problem
+
+[What is wrong]
+
+### Why Repair In Place Is Not Enough
+
+[Why a small patch will not solve it]
+
+### Risk Of Rewriting
+
+[What could break]
+
+### Files Affected
+
+[List files]
+
+### Recommendation
+
+[Rewrite or repair]
+```
+
+If this justification is weak, repair in place.
+
+---
+
+## Preserve Structure Rule
+
+When fixing bugs, preserve the approved architecture unless the architecture itself is the problem.
+
+Do not move logic between layers just to make the immediate error disappear.
+
+Examples:
+
+* Do not move SQL into an admin page because the repository insert failed.
+* Do not put business logic in the root plugin file because a class failed to load.
+* Do not add inline styles because the CSS file did not enqueue.
+* Do not bypass a service because the adapter has a bug.
+* Do not duplicate a utility because the import path is wrong.
+
+Fix the architecture path.
+
+Do not route around it.
+
+---
+
+## Name Consistency Rule
+
+Before rewriting, check for naming mismatch.
+
+Many bugs are not design failures.
+
+They are naming failures.
+
+Check:
+
+* Form field names
+* Request keys
+* Database column names
+* Array keys
+* JSON keys
+* Function names
+* Class names
+* File names
+* Hook names
+* Action names
+* Nonce names
+* Option names
+* Table names
+* Slugs
+* Text domains
+
+If a PHP form does not save correctly because the SQL field names do not match the form names, fix the mapping.
+
+Do not rebuild the form.
+
+---
+
+## Change Discipline Rule
+
+One debugging pass should have one clear purpose.
+
+Do not combine:
+
+* bug fix
+* refactor
+* rename
+* new feature
+* style cleanup
+* architecture change
+
+unless Shaun explicitly asked for that combined change.
+
+Prefer:
+
+```text
+Fix the save bug first.
+Then refactor if needed.
+Then improve UI if needed.
+```
+
+---
+
+## Patch Report Format
+
+When repairing code, report like this:
+
+```md
+## Repair Report
+
+### Problem
+
+[What failed]
+
+### Cause
+
+[Root cause or best-supported cause]
+
+### Fix
+
+[Smallest change made]
+
+### Files Changed
+
+- `path/to/file.php`
+
+### Verification
+
+[How it was checked]
+
+### Follow-up
+
+[Any optional improvement, not done automatically]
+```
+
+---
+
+## Final Rule
+
+Do not panic-rewrite.
+
+Debug like a developer.
+
+Repair in place first.
+
+Rewrite only when the current design is genuinely wrong, unsafe, or more expensive to repair than replace.
+
+
+
 ## Final Rule
 
 The agent must be useful.
