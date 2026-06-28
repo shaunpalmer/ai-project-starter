@@ -62,3 +62,17 @@ Anti-Loop Rule
 The AI must not keep polishing.
 
 Once the done rules pass, stop, summarize what changed, and give Shaun the next practical step.
+
+
+## Resolution Status
+
+| Status |
+|---|
+| RESOLVED |
+| NEEDS SHAUN/Senior Developer |
+| NEEDS ARCHITECTURE UPDATE |
+| NEEDS PROTOTYPE |
+| DEFERRED |
+| REJECTED |
+
+
