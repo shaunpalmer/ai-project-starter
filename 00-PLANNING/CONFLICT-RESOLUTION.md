@@ -28,7 +28,7 @@ Confirmed decisions beat suggestions.
 
 Research informs decisions, but does not automatically become architecture.
 
-If unsure, ask Shaun.
+If unsure, ask NEEDS SHAUN/Senior Developer
 
 ## Research Folder Rule
 
@@ -43,7 +43,7 @@ Summarize them into options, trade-offs, risks, and recommendations.
 Every conflict must end with one status:
 
 - RESOLVED
-- NEEDS SHAUN
+- NEEDS SHAUN/Senior Developer
 - NEEDS ARCHITECTURE UPDATE
 - NEEDS PROTOTYPE
 - DEFERRED
