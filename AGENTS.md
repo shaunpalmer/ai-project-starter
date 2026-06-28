@@ -132,32 +132,47 @@ Do not load all skills. Load only what you need.
 
 After you have read the four files and filled the planning docs:
 
-- [ ] PROJECT-INTAKE.md answers are clear (project type, commercial reason, scope)
-- [ ] PROJECT-TYPES.md has been followed (correct patterns, database, structure)
-- [ ] All 5 gates in DECISIONS-TO-MAKE.md are cleared
-- [ ] PRD.md is filled with problem, users, goals, metrics, stories
-- [ ] ARCHITECTURE.md shows system boundaries, layers, directory structure
+- [ ] HARNESS-LOOP.md has been applied: Discovery, Planning, Verification, and either Ship or Blocked            status are clear
+- [ ] PROJECT-INTAKE.md answers are clear enough to identify project type, commercial reason, scope, and          first useful outcome.
+- [ ] PROJECT-TYPES.md has been followed for the correct project type, architecture pattern, database             direction, and relevant skills.
+- [ ] All 5 gates in 00-PLANNING/DECISIONS-TO-MAKE.md are cleared:
+      Project type is known.
+      Architecture shape is chosen.
+      Source of truth is defined.
+      Data flow is mapped.
+      First build slice is named.
+- [ ] PRD.md is filled with the problem, users, goals, success metrics, constraints, and user stories.
+- [ ] ARCHITECTURE.md shows system boundaries, layers, directory structure, dependencies, and integration         points
 - [ ] TECH-SPEC.md lists the stack with justification
-- [ ] DATA-FLOW.md is filled (if project moves data)
-- [ ] DATABASE.md has schema (if storage is needed)
-- [ ] TASKS.md has the build backlog in priority order
+- [ ] DATA-FLOW.md is filled if the project moves, imports, exports, transforms,
+- [ ] TECH-SPEC.md lists the chosen stack with practical justification.
 - [ ] AI-NOTES.md has a Change Log entry for this planning session, with decisions and any UNRESOLVED items
 - [ ] You have asked Shaun only the questions you could not answer from PROJECT-INTAKE.md
-
-If any box is unchecked, keep planning. Do not move to code.
+- [ ] The agent can clearly state one of these outcomes:
+      READY FOR CODE
+      BLOCKED — NEEDS SHAUN
+      NEEDS ONE MORE PLANNING LOOP
+     If any box is unchecked, keep planning. Do not move to code.
 
 ---
 
-## Prohibited Actions
+## ## Prohibited Actions
 
-- Do not write code before the 5 gates are cleared
-- Do not prescribe stack choices not in TECH-SPEC.md
-- Do not invent architecture not chosen in DECISIONS-TO-MAKE.md or PROJECT-TYPES.md
-- Do not skip database selection reasoning — justify it by project type
-- Do not push to `main` directly (if this is a git repo)
-- Do not expose secrets in code or comments — `.env` only
-- Do not add patterns for their own sake — only when they reduce complexity
-- Do not guess what Shaun wants — ask instead
+* Do not write code before the 5 planning gates are cleared.
+* Do not move to code while the planning status is `BLOCKED` or `NEEDS ONE MORE PLANNING LOOP`.
+* Do not skip `HARNESS-LOOP.md`.
+* Do not keep looping indefinitely. After two failed attempts to resolve the same blocker, stop and ask Shaun.
+* Do not invent missing architecture, source-of-truth rules, database choices, external services, credentials, deployment targets, or business logic.
+* Do not prescribe stack choices that are not justified in `TECH-SPEC.md`.
+* Do not choose a database because it is fashionable. Justify database choice by project type, data shape, data lifetime, and operational needs.
+* Do not add patterns for their own sake. Use patterns only when they reduce complexity, improve testability, or protect future changes.
+* Do not rewrite unrelated files while completing a planning, coding, or review task.
+* Do not change architecture, stack, schema, or source-of-truth rules without updating the relevant planning document and `AI-NOTES.md`.
+* Do not ignore conflicts between project files. Use the conflict-resolution rules before proceeding.
+* Do not push directly to `main` if this is a git repository.
+* Do not expose secrets in code, comments, docs, logs, examples, or commits. Use `.env` and safe placeholders only.
+* Do not guess what Shaun wants when the next step changes project direction, cost, complexity, or risk. Ask.
+
 
 ---
 
