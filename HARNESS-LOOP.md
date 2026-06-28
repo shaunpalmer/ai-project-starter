@@ -7,7 +7,16 @@ The AI must not keep improving forever. It must move through clear phases, verif
 
 Core Loop
 
-For every project, task, or feature, follow this loop:
+## LOOP
+
+| Step | Phase | Purpose |
+|---:|---|---|
+| 1 | Discovery | Identify what information is missing. |
+| 2 | Planning | Break the work into clear steps. |
+| 3 | Execution | Complete the next useful step. |
+| 4 | Verification | Check the result against the goal. |
+| 5 | Iteration | Improve anything that failed. |
+| 6 | Ship | Give the final version only when it is good enough. |For every project, task, or feature, follow this loop:
 
 Discovery
 Read the relevant project files.
