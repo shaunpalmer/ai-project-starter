@@ -1,4 +1,5 @@
-##CONFLICTS-AND-RESEARCH
+##CONFLICTS-AND-RESEARCH##
+
 that file becomes the place where the agent works through:
 
 competing ideas
