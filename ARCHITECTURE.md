@@ -147,5 +147,29 @@ Envelope and Pipeline, often paired with Factory, give you structure. You wrap d
 Together, these patterns provide a useful combination of stability and clarity, which is especially helpful for systems that need resilience and clean data flow.
 
 *Update this as the project grows.*
-+++
+## Architecture Authority
+
+`ARCHITECTURE.md` is the source of truth for system structure.
+
+Worker agents must follow this file when creating, moving, or modifying code.
+
+If a new request conflicts with this architecture, the agent must not silently implement the request. The agent must first identify the conflict and ask whether the architecture should be updated.
+
+Casual comments, brainstorming, possible options, or rough ideas do not override this file.
+
+Architecture may only change when:
+
+* Shaun confirms the change deliberately.
+* The reason for the change is recorded.
+* The relevant planning files are updated.
+* `AI-NOTES.md` records the decision and rationale.
+
+The correct sequence is:
+
+1. Confirm the architectural change.
+2. Update `ARCHITECTURE.md`.
+3. Update any affected planning files.
+4. Record the decision in `AI-NOTES.md`.
+5. Then implement.
+
 
