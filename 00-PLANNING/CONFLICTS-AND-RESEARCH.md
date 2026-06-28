@@ -1,5 +1,5 @@
 ##CONFLICTS-AND-RESEARCH
-hat file becomes the place where the agent works through:
+that file becomes the place where the agent works through:
 
 competing ideas
 different possible architectures
