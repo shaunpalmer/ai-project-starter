@@ -202,3 +202,24 @@ For details, read `SHAUN-BUILD-PROFILE.md`.
 - [ ] I have asked Shaun about gaps, not guessed answers
 - [ ] I have updated AI-NOTES.md (change log + decisions + unresolved)
 - [ ] I am ready for code to be written
+## Add to Skills Reference
+
+| Skill              | Load when                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| `complexity-brake` | Before adding new files, classes, dependencies, database tables, build tooling, or abstractions |
+
+---
+
+## Add to Key Rules
+
+**Rule 8: Run the complexity brake before execution**
+
+Before writing code, the agent must check whether the proposed code, file, class, table, dependency, framework, or abstraction actually needs to exist.
+
+Use `.github/skills/complexity-brake/SKILL.md` when the implementation might become larger than the first useful build slice requires.
+
+The complexity brake must not remove security, validation, escaping, permissions, error handling, data protection, accessibility, or required verification.
+
+Small unsafe code is not acceptable.
+
+The goal is the smallest safe implementation that fits the approved architecture.
