@@ -6,6 +6,12 @@
 
 ---
 
+## FIRST BUILD SLICE:
+
+_[Name of the first useful, shippable slice — e.g., "Core data ingestion and validation"]_
+
+---
+
 ## Status Key
 
 | Symbol | Meaning |
