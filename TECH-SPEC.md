@@ -2,6 +2,15 @@
 
 > Workers must not deviate from stack choices documented here without architect sign-off.
 
+## Machine-Readable Stack Markers
+
+Runtime:
+Language:
+Database:
+Dependencies:
+
+---
+
 ## Stack
 
 | Layer | Technology | Version | Notes |
