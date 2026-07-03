@@ -73,3 +73,24 @@ function runComplianceCheck() {
 }
 
 runComplianceCheck();
+
+/**
+ * @description [Clear, concise summary of what this function/class does]
+ * @responsibility [Single Responsibility: The ONE reason this code should change]
+ * @architecture [How this fits into the wider system/harness pipeline]
+ * @problem [The specific business or technical problem this block solves]
+ */
+
+// 1. Enforce Shaun's OOP Architectural Docblock Standards
+const requiredTokens = ['@description', '@responsibility', '@architecture', '@problem'];
+const missingTokens = [];
+
+requiredTokens.forEach(token => {
+    if (!content.includes(token)) {
+        missingTokens.push(token);
+    }
+});
+
+if (missingTokens.length > 0) {
+    issues.push(`OOP Standard Violation: Missing architectural documentation tokens: ${missingTokens.join(', ')}.`);
+}
