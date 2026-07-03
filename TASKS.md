@@ -6,9 +6,24 @@
 
 ---
 
-## FIRST BUILD SLICE:
+## Before You Pick Up a Task
 
-_[Name of the first useful, shippable slice — e.g., "Core data ingestion and validation"]_
+If TASKS.md is empty (no tasks in "Active Sprint"), you are still in **PHASE 2: Fill Planning Files**.
+
+Do NOT look for tasks yet. Instead:
+
+1. Read `ONBOARDING.md` — understand the two-phase workflow
+2. Produce a Planning Summary (see ONBOARDING.md)
+3. Wait for Shaun's approval
+4. Fill planning files in this order:
+   - `ARCHITECTURE.md` (defines structure first)
+   - `TECH-SPEC.md` (defines stack)
+   - `DATABASE.md` (if architecture mentions database)
+   - `DATA-FLOW.md` (if architecture mentions data movement)
+   - `TASKS.md` (fill with first useful build slice + 3–5 tasks)
+   - `AI-NOTES.md` (record key decisions)
+5. Wait for Shaun's second approval
+6. Only THEN proceed to **PHASE 3: Pick up a task**
 
 ---
 
@@ -24,7 +39,7 @@ _[Name of the first useful, shippable slice — e.g., "Core data ingestion and v
 
 ---
 
-## Instructions for the Worker Model
+## Instructions for the Worker Model (PHASE 3: Coding)
 
 Before picking up any task:
 
@@ -44,7 +59,7 @@ Before picking up any task:
 
 | # | Task | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | | Architect | `[ ]` | Fill in after planning is complete |
+| 1 | | Architect | `[ ]` | Fill in after Phase 2 planning is complete |
 
 ---
 
@@ -100,6 +115,7 @@ When the architect adds a task, use this format:
 - [ ] Manual test passed
 - [ ] No secrets in code
 - [ ] ARCHITECTURE.md updated if new files/folders were created
+- [ ] AI-NOTES.md updated if decisions/assumptions were made during this task
 - [ ] TASKS.md status updated to [x]
 
 **Notes:**
@@ -134,5 +150,6 @@ Install dependencies from TECH-SPEC.md.
 - [ ] Code written and working
 - [ ] Manual test: entry point runs
 - [ ] ARCHITECTURE.md updated if structure changed
+- [ ] AI-NOTES.md updated if decisions were made
 - [ ] TASKS.md status updated to [x]
 ```
