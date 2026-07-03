@@ -1,5 +1,3 @@
-# File: `ONBOARDING.md`
-
 # Project Onboarding — Planning Before Code
 
 ## Purpose
@@ -16,7 +14,7 @@ The goal is simple:
 
 ## Mandatory Read List
 
-Before writing code, read these files in order:
+Before writing code, read these files **in order**:
 
 1. `PROJECT-INTAKE.md`
 2. `AGENTS.md`
@@ -25,51 +23,52 @@ Before writing code, read these files in order:
 5. `00-PLANNING/DECISIONS-TO-MAKE.md`
 6. `ARCHITECTURE.md`
 7. `TECH-SPEC.md`
-8. `DATABASE.md` if storage is needed
-9. `DATA-FLOW.md` if the project moves data
+8. `DATABASE.md` (if storage is needed)
+9. `DATA-FLOW.md` (if the project moves data)
 10. `TASKS.md`
 11. `AI-NOTES.md`
-12. `00-PLANNING/RESEARCH-NOTES/` if research notes exist
+12. `00-PLANNING/RESEARCH-NOTES/` (if research notes exist)
 
-Do not skip the read order.
+**Do not skip the read order.**
 
-Do not write code from memory.
+**Do not write code from memory.**
 
-Do not assume the architecture.
+**Do not assume the architecture.**
 
 ---
 
 ## Required Planning Summary
 
-Before code begins, the agent must produce a Planning Summary.
+Before code begins, the agent must produce a **Planning Summary**.
 
 The Planning Summary must include:
 
-* Files read
-* 1-line summary of each required file
-* Key constraints found
-* Conflicts found
-* Unresolved decisions
-* First useful build slice
-* 3 immediate tasks
-* Files that must be updated before or during implementation
-* Final status
+- **Files read** — list each file with a 1-line summary
+- **Key constraints found** — what must not be violated
+- **Conflicts found** — any contradictions between files
+- **Unresolved decisions** — what still needs Shaun
+- **First useful build slice** — the exact name from TASKS.md
+- **3 immediate tasks** — the next three things to build
+- **Files that must be updated** — before or during implementation
+- **Final status** — one of the allowed statuses below
 
-Allowed final statuses:
+### Allowed Final Statuses
 
-* `READY FOR CODE`
-* `NEEDS SHAUN`
-* `NEEDS SENIOR DEVELOPER`
-* `NEEDS ONE MORE PLANNING LOOP`
-* `BLOCKED`
+- `READY FOR CODE`
+- `NEEDS SHAUN`
+- `NEEDS SENIOR DEVELOPER`
+- `NEEDS ONE MORE PLANNING LOOP`
+- `BLOCKED`
 
 ---
 
-## Copyable AI Handoff Prompt
+## Hands-On Prompts & Markers
+
+### Copyable AI Handoff Prompt
 
 Use this prompt when handing a new project to an AI agent:
 
-```md
+```
 Do not write any code yet.
 
 Read these files first:
@@ -81,11 +80,11 @@ Read these files first:
 - 00-PLANNING/DECISIONS-TO-MAKE.md
 - ARCHITECTURE.md
 - TECH-SPEC.md
-- DATABASE.md if storage is needed
-- DATA-FLOW.md if the project moves data
+- DATABASE.md (if storage is needed)
+- DATA-FLOW.md (if the project moves data)
 - TASKS.md
 - AI-NOTES.md
-- 00-PLANNING/RESEARCH-NOTES/ if research notes exist
+- 00-PLANNING/RESEARCH-NOTES/ (if research notes exist)
 
 For each file, give:
 
@@ -107,11 +106,11 @@ Do not write code until the planning gates are resolved.
 
 ---
 
-## Short Pre-Code Verification Prompt
+### Short Pre-Code Verification Prompt
 
 Before an AI agent writes code, ask:
 
-```md
+```
 Confirm before coding:
 
 1. Which planning files did you read?
@@ -127,72 +126,107 @@ If any required gate is unresolved, stop.
 
 ---
 
-## Planning Gate Markers
+### Planning Gate Markers
 
 Use clear markers so humans, agents, and CI checks can understand the project state.
 
-Recommended marker at the top of `PROJECT-INTAKE.md`:
+**Recommended marker at the top of `PROJECT-INTAKE.md`:**
 
-```md
+```
 COMPLETED: true
 FILLED_BY: Shaun Palmer
 DATE: YYYY-MM-DD
 ```
 
-Recommended gate format in `00-PLANNING/DECISIONS-TO-MAKE.md`:
+**Recommended gate format in `00-PLANNING/DECISIONS-TO-MAKE.md`:**
 
-```md
+```
 Gate: Project type
 STATUS: RESOLVED
 DECIDED: WordPress plugin
 RATIONALE: The project installs into WordPress and uses WP admin screens.
+```
 
+```
 Gate: Architecture shape
 STATUS: RESOLVED
 DECIDED: Modular WordPress plugin with thin root file, main plugin class, services, repositories, and adapters.
 RATIONALE: Keeps WordPress hooks at the edge and business logic testable.
 ```
 
-Allowed gate statuses:
+**Allowed Gate Statuses:**
 
-* `STATUS: RESOLVED`
-* `STATUS: NEEDS_SHAUN`
-* `STATUS: NEEDS_SENIOR_DEVELOPER`
-* `STATUS: DEFERRED`
+- `STATUS: RESOLVED`
+- `STATUS: NEEDS_SHAUN`
+- `STATUS: NEEDS_SENIOR_DEVELOPER`
+- `STATUS: DEFERRED`
 
-Do not use vague statuses such as “maybe”, “sort of”, “probably”, or “later”.
+**Do not use vague statuses** such as "maybe", "sort of", "probably", or "later".
+
+---
+
+### AI-NOTES.md Format
+
+Entries should include:
+
+- **DATE** — when the note was created (YYYY-MM-DD)
+- **DECISION** or **ASSUMPTION** — what was decided/assumed
+- **RATIONALE** — why this decision was made
+- **WHO DECIDED** — which agent or person made it
+
+**Unresolved items go in an "Unresolved" section:**
+
+```
+## Unresolved
+
+- DATE: 2026-07-03
+  ASSUMPTION: Using SQLite for initial builds to avoid DevOps overhead
+  RATIONALE: This is a single-user tool; schema is simple
+  WHO DECIDED: Shaun + Claude
+  STATUS: UNRESOLVED — needs DBAs for prod scaling plan
+```
+
+**Once resolved, move to a "Resolved" section with resolution date:**
+
+```
+## Resolved
+
+- DATE: 2026-07-02 | RESOLVED: 2026-07-03
+  DECISION: Authentication via JWT tokens (no sessions)
+  RATIONALE: Stateless, scales, works with API clients
+  WHO DECIDED: Shaun
+```
+
+Keep this file updated so context is never lost between agent calls.
 
 ---
 
 ## When Coding May Start
 
-Coding may start only when:
+Coding may start only when **all** of these are true:
 
-* `PROJECT-INTAKE.md` is completed.
-* `DECISIONS-TO-MAKE.md` has all required gates marked `STATUS: RESOLVED`, or non-blocking gates are clearly marked `STATUS: DEFERRED`.
-* `ARCHITECTURE.md` defines where files belong.
-* `TECH-SPEC.md` defines the stack and runtime.
-* `DATABASE.md` is filled if storage is needed.
-* `DATA-FLOW.md` is filled if data moves through the system.
-* `TASKS.md` names the first useful build slice.
-* `AI-NOTES.md` records unresolved items and planning decisions.
-* The agent has produced a Planning Summary.
-* No blocker remains with `NEEDS_SHAUN` or `NEEDS_SENIOR_DEVELOPER`.
+- [ ] `PROJECT-INTAKE.md` is completed (includes `COMPLETED: true`)
+- [ ] `DECISIONS-TO-MAKE.md` has all required gates marked `STATUS: RESOLVED`, or non-blocking gates are clearly marked `STATUS: DEFERRED`
+- [ ] `ARCHITECTURE.md` defines where files belong
+- [ ] `TECH-SPEC.md` defines the stack and runtime (Machine-Readable Stack Markers are filled)
+- [ ] `DATABASE.md` is filled (if storage is needed)
+- [ ] `DATA-FLOW.md` is filled (if data moves through the system)
+- [ ] `TASKS.md` names the first useful build slice (includes `FIRST BUILD SLICE:`)
+- [ ] `AI-NOTES.md` records unresolved items and planning decisions
+- [ ] The agent has produced a Planning Summary
+- [ ] No blocker remains with `NEEDS_SHAUN` or `NEEDS_SENIOR_DEVELOPER`
 
 ---
 
 ## Final Rule
 
-Read first.
-
-Plan second.
-
-Verify third.
-
-Code fourth.
+1. **Read first.**
+2. **Plan second.**
+3. **Verify third.**
+4. **Code fourth.**
 
 If the project is unclear, use the harness loop.
 
-If the blocker is small and safe, make a recorded assumption.
+If the blocker is small and safe, make a recorded assumption (in AI-NOTES.md).
 
 If the blocker changes architecture, cost, risk, stack, data, or security, ask Shaun.
