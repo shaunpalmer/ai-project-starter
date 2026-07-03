@@ -25,7 +25,9 @@ This folder tells the AI how you think, what you've already decided, and what it
 
 ## Quick Start
 
-Follow `DAY-1-FLOWCHART.md` — it's the 15-minute path from clone to "AI is building."
+**Start here:** Read `ONBOARDING.md` — it's the planning-first checklist and handoff guide.
+
+Then follow `DAY-1-FLOWCHART.md` — it's the 15-minute path from clone to "AI is building."
 
 ```bash
 # Copy into your new project
@@ -81,6 +83,7 @@ You should not touch these files while planning is active. Let the AI fill them.
 ```
 /
 ├── README.md                    ← you are here (for humans)
+├── ONBOARDING.md                ← planning-first checklist & handoff guide (read first)
 ├── DAY-1-FLOWCHART.md           ← human path: clone → intake → handoff (15 min)
 ├── AGENTS.md                    ← AI operating manual (for AI)
 │
@@ -161,6 +164,7 @@ Total front-load: 20–40 minutes to replace 1–2 hours of thinking-in-the-dark
 ## Support
 
 If you're stuck or the AI seems confused:
+- Read `ONBOARDING.md` for the planning checklist and handoff prompts
 - Read `AGENTS.md` to see what the AI should be doing
 - Check `PROJECT-TYPES.md` for your project type
 - Read `SHAUN-BUILD-PROFILE.md` for the expected style
