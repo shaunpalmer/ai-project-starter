@@ -228,6 +228,11 @@ def main() -> int:
         print("Planning check failed.\n")
         print("Fix these items before coding or merging:\n")
         print("\n".join(failures))
+        print("\nNext steps:")
+        print("1. Read ONBOARDING.md for the two-phase workflow and planning checklist")
+        print("2. Fill the missing or incomplete files listed above")
+        print("3. Push your changes to trigger the check again")
+        print("4. Run: python scripts/ensure_planning.py (locally to verify)")
         return 1
 
     check_project_intake(failures)
@@ -241,6 +246,11 @@ def main() -> int:
         print("Planning check failed.\n")
         print("Fix these items before coding or merging:\n")
         print("\n".join(failures))
+        print("\nNext steps:")
+        print("1. Read ONBOARDING.md for the two-phase workflow and planning checklist")
+        print("2. Fill the missing or incomplete files listed above")
+        print("3. Push your changes to trigger the check again")
+        print("4. Run: python scripts/ensure_planning.py (locally to verify)")
         return 1
 
     print("Planning check passed.")
