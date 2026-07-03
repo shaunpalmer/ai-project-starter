@@ -4,6 +4,8 @@
 
 ## Machine-Readable Stack Markers
 
+Fill with actual values only (remove examples):
+
 Runtime: (e.g., Node.js 18, Python 3.11, Go 1.21, etc.)
 Language: (e.g., TypeScript, Python, Go, PHP, etc.)
 Database: (e.g., PostgreSQL, MongoDB, SQLite, etc.)
