@@ -16,8 +16,15 @@ const ROOT = path.resolve(__dirname, '..');
 function verifyDebuggingGate(targetRelativePath) {
     const fullTargetPath = path.join(ROOT, targetRelativePath);
     
-    // Whitelist planning documents - the AI can always edit markdown or logs
-    if (targetRelativePath.startsWith('00-PLANNING') || targetRelativePath.endsWith('.md')) {
+    // Normalize path separators to forward slashes for unified checking
+    const normalizedPath = targetRelativePath.replace(/\\/g, '/');
+
+    // WHITELIST: The AI can always edit planning documents, skills, or any markdown context
+    if (
+        normalizedPath.startsWith('00-PLANNING/') || 
+        normalizedPath.startsWith('.github/skills/') || 
+        normalizedPath.endsWith('.md')
+    ) {
         return true;
     }
 
@@ -40,16 +47,17 @@ function verifyDebuggingGate(targetRelativePath) {
         console.error(`\n❌ [GUARD DENIED] Wholesale modification blocked!`);
         console.error(`Reason: You are attempting to alter an existing codebase asset without an active debugging verification.`);
         console.error(`\nFix Action Required by AI:`);
-        console.error(`1. You must first create a diagnostic file at: ${path.relative(ROOT, sessionLogPath)}`);
-        console.error(`2. Document the exact error, the root cause, and your targeted in-place fix inside that file.`);
-        console.error(`3. Once that file is populated, this gate will unlock for editing.`);
+        console.error(`1. Read your operational protocol rules in: \`.github/skills/guard_debugging.md\``);
+        console.error(`2. You must first create a diagnostic file at: \`${path.relative(ROOT, sessionLogPath)}\``);
+        console.error(`3. Document the exact error, the root cause, and your targeted in-place fix inside that file.`);
+        console.error(`4. Once that file is populated, this gate will unlock for editing.`);
         process.exit(1);
     }
 
     // GATE 3: Verify the debug log isn't just empty placeholder text
     const sessionContent = fs.readFileSync(sessionLogPath, 'utf8').trim();
     if (sessionContent.length < 50 || sessionContent.includes('TODO')) {
-        console.error(`\n❌ [GUARD DENIED] The debug session log at [${path.relative(ROOT, sessionLogPath)}] is empty or a placeholder.`);
+        console.error(`\n❌ [GUARD DENIED] The debug session log at [\`${path.relative(ROOT, sessionLogPath)}\`] is empty or a placeholder.`);
         console.error(`You must provide a real structural analysis before coding permissions are granted.`);
         process.exit(1);
     }
