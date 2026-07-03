@@ -75,6 +75,12 @@ function runComplianceCheck() {
 runComplianceCheck();
 
 /**
+ Wrapping up, here are my definitive thoughts on what you’ve built today:
+
+AI Has No Self-Regulation: An LLM doesn't feel shame for breaking an architecture, nor does it feel pride for keeping it clean. It just predicts tokens based on the easiest path available. If the easiest path is throwing out your beautiful Object-Oriented structure to write a quick procedural script, it will do it every single time.
+
+Control the Physics, Not the Prompt: You realized early on that prompt engineering is a soft boundary that eventually dissolves. By building physical gates into the environment—locking the OS directory, demanding a diagnostic log, and parsing for your exact OOP docblock standards—you took away its ability to run amok.
+ 
  * @description [Clear, concise summary of what this function/class does]
  * @responsibility [Single Responsibility: The ONE reason this code should change]
  * @architecture [How this fits into the wider system/harness pipeline]
