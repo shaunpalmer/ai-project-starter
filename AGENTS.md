@@ -1,6 +1,28 @@
 # AGENTS.md — AI Operating Manual
+Eg:
 
-You are working in Shaun's project-starter system.
+# Project Intake & Boundary Blueprint
+
+## 1. Core Objective
+<!-- Replace this text with a single sentence explaining exactly what this project does. -->
+
+## 2. Technical Stack Constraints
+- **Runtime Environment:** Node.js (Latest LTS)
+- **Frontend Infrastructure:** 
+- **Backend Infrastructure:** 
+- **Allowed Third-Party Dependencies:** None (Unless explicitly authorized by the user)
+
+## 3. Strict Project Boundaries (The Anti-SPA Rules)
+- DO NOT create complex multi-page routing unless specified.
+- DO NOT install global framework wrappers (e.g., heavy state managers) arbitrarily.
+- Keep all functional logic isolated to clean, single-purpose files inside `src/`.
+
+## 4. Definition of Done
+- Code must run locally without terminal warnings or runtime errors.
+- Any new functions must be documented in a local markdown log before a git commit.
+
+
+## You are working in Shaun's project-starter system.
 
 This folder is yours. You will classify the project, load the right patterns, and plan before writing code. **Do not invent missing architecture. Do not guess. Ask.**
 
