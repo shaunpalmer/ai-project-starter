@@ -82,7 +82,16 @@ git init
 6. **AI (or you) build** — from the TASKS list
 
 ---
+First-Time Human Steps
 
+Fill out PROJECT-INTAKE.md (5 questions)
+Run npm run setup (if not already done)
+Tell your AI:textI've filled PROJECT-INTAKE.md. Read AGENTS.md and start planning.
+After planning gates are cleared → npm run unlock
+
+Useful Commands
+
+CommandPurposenpm run setupFirst-time harness initializationnpm run lockLock source code (planning required)npm run unlockVerify planning then unlocknpm run statusShow current lock statenpm run memory-summaryShow active memory context
 ## What Gets Filled In
 
 Once you hand off, the AI will fill:
