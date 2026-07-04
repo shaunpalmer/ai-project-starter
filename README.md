@@ -1,6 +1,29 @@
 # Project Starter
+## 1. Setup (One-time)
 
-A lightweight planning system for AI-assisted development.
+Bash# 1. Clone or copy the harness into your new project
+cp -r /path/to/ai-project-starter my-new-project/
+cd my-new-project
+
+## 2. Install and initialize
+npm install
+npm run setup
+2. Daily Workflow
+Bash# Check current lock status
+npm run status
+
+# Lock the project (recommended at start of session)
+npm run lock
+
+# When ready to code:
+npm run unlock     # This runs planning verification first
+3. First-Time Human Steps
+
+Fill out PROJECT-INTAKE.md (5 questions)
+Run npm run setup (if not already done)
+Tell your AI:textI've filled PROJECT-INTAKE.md. Read AGENTS.md and start planning.
+
+## A lightweight planning system for AI-assisted development.
 
 ---
 
