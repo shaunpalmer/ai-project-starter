@@ -66,7 +66,13 @@ git init
 ```
 
 ---
+Tell your AI:textI've filled PROJECT-INTAKE.md. Read AGENTS.md and start planning.
+After planning gates are cleared → npm run unlock
 
+Useful Commands
+
+
+CommandPurposenpm run setupFirst-time harness initializationnpm run lockLock source code (planning required)npm run unlockVerify planning then unlocknpm run statusShow current lock statenpm run memory-summaryShow active memory context
 ## What the Human Does
 
 1. **Copy this folder** into your project
