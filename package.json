@@ -1,0 +1,20 @@
+{
+  "name": "ai-project-starter",
+  "version": "0.1.0",
+  "description": "AI-assisted project planning harness with skills, planning gates, and execution controls.",
+  "main": "scripts/harness-init.js",
+  "type": "module",
+  "scripts": {
+    "setup": "node scripts/harness-init.js",
+    "lock": "node scripts/lock-project.js lock",
+    "unlock": "node scripts/lock-project.js unlock",
+    "status": "node scripts/lock-project.js status",
+    "memory-summary": "node scripts/memory-guard.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": ["ai", "agent", "harness", "planning", "skills"],
+  "author": "Shaun Palmer",
+  "license": "MIT"
+}
