@@ -1,6 +1,29 @@
 # Project Starter
 ## 1. Setup (One-time)
 
+# AI Project Starter Harness
+
+A lightweight, opinionated system that helps you work effectively with AI agents (Claude, Cursor, Kilo, etc.). It forces clear planning **before** any code is written and gives you strong guardrails during execution.
+
+---
+
+## Getting Started (10–15 minutes)
+
+### Prerequisites
+- **Node.js** (v20 or higher)
+- Git
+
+### 1. Setup
+
+```bash
+# Copy the harness into your new project
+cp -r /path/to/ai-project-starter my-new-project/
+cd my-new-project
+
+# Initialize everything
+npm install
+npm run setup
+
 Bash# 1. Clone or copy the harness into your new project
 cp -r /path/to/ai-project-starter my-new-project/
 cd my-new-project
