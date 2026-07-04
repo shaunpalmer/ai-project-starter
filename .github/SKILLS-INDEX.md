@@ -38,4 +38,4 @@ Load skills **only** when they are relevant to the project type or current task.
 
 **Last Updated:** ${new Date().toISOString().split('T')[0]}
 
-## https://github.com/shaunpalmer/ai-project-starter/blob/main/.github/skills/INDEX.md
+## ai-project-starter/blob/main/.github/skills/INDEX.md
