@@ -1,4 +1,4 @@
-# Project Starter
+# Harness Engineering
 ## 1. Setup (One-time)
 
 # AI Project Starter Harness
