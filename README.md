@@ -231,4 +231,4 @@ If you're stuck or the AI seems confused:
 - Read `SHAUN-BUILD-PROFILE.md` for the expected style
 - The `00-PLANNING/` folder is where problems get resolved
 
-For issues or feedback: https://github.com/Kilo-Org/kilocode
+context-engineering, cursor-ai, claude-ai, llm-guardrails, harness-engineering.
