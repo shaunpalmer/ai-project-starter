@@ -102,3 +102,11 @@ async function testRouter() {
 }
 
 testRouter();
+
+
+//The AI Router (The Gateway)
+​The router acts as the "Control Plane" that sits directly between your incoming request and the LLM. Its entire job is to look at a task and decide which model is best suited to handle it, preventing you from wasting a massive 400B parameter model's context window on a simple formatting job.
+​Here are the key areas in the router you will need to configure:
+​The Adapters (The Execution Functions): In the script, there are distinct classes for different models (e.g., FastModelAdapter, HeavyModelAdapter, SecurityModelAdapter). Inside each of these, there is a placeholder execute() function. This is where you will plug in your actual API connection strings or local execution commands to trigger the respective models.
+​The Object Dictionary (this.adapters): This is the core of the Strategy Pattern. It is a simple list mapping a task type (like 'deep_coding') to a specific adapter (like your 400B model). If you add a new model later, you just add one line here mapping a new task name to that new model.
+​The Classifier (_classify): This is the brain of the router. Currently, it uses a basic keyword check (e.g., looking for the word "password" to route to a secure model) to enforce your constraints safely. You can replace this basic logic with your own advanced regex, or even pass the prompt to a tiny, lightning-fast local model to categorize the intent before routing it.//
