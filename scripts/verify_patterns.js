@@ -100,3 +100,9 @@ requiredTokens.forEach(token => {
 if (missingTokens.length > 0) {
     issues.push(`OOP Standard Violation: Missing architectural documentation tokens: ${missingTokens.join(', ')}.`);
 }
+// Inside verify_patterns.js
+if (Math.random() < 0.15) {
+    console.log("🚨 Random Audit Triggered!");
+    // Fire a prompt back to the AI: 
+    // "You claimed to use the Single Responsibility Principle here. Explain exactly how this class adheres to it."
+}
