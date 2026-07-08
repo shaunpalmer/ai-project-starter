@@ -157,3 +157,22 @@ function runComplianceCheck() {
 }
 
 runComplianceCheck();
+
+
+const { execSync } = require('child_process');
+
+try {
+    execSync('node scripts/verify_patterns.js src/services/UserService.js');
+    console.log("File saved and completed cleanly!");
+} catch (error) {
+    if (error.status === 10) {
+        // INTERCEPT THE 15% RANDOM QUIZ
+        console.log("Harness intercepted code 10. Pausing pipeline to issue a pop quiz to the model...");
+        
+        // Pass a command back to the model:
+        // "Your code passed syntax checks, but you hit a random audit. Explain exactly how this class honors the principles of High Cohesion and Low Coupling."
+    } else {
+        // Treat it as a standard rule rejection (Exit Code 1)
+        console.log("Code rejected due to actual rule violations. Forcing rewrite loop.");
+    }
+}
