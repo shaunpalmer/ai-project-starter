@@ -13,3 +13,8 @@ const openai = new OpenAI({
 });
 
 ## npm install openai dotenv  
+/*That’s all you needed: endpoint variable, model variable, 
+and private API-key variable wired into Glow. 
+The next step is to paste this opening section over the current imports and client setup,
+then run the optimiser once manually before scheduling it nightly.
+*/
