@@ -216,7 +216,7 @@ route skills → plan slice → generate candidate → verify artifact → repai
 
 ---
 
-## Final Rule
+## Final Rule 
 
 The Skill Router does not do the specialist work.
 
