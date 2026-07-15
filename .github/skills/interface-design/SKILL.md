@@ -108,3 +108,4 @@ Write a fake/stub implementation for testing. This proves the interface is usabl
 - [ ] All layer-boundary functions return Result envelopes
 - [ ] Every interface has at least one test double
 - [ ] Factories are in the infrastructure layer
+
