@@ -1,0 +1,167 @@
+# Checklist Enforcement (Logical Layout Primitives)
+Before outputting any code, the agent MUST explicitly output this markdown block:
+### [SYSTEM INTERACTION CHECKLIST]
+- **Target Operator**: [Define exact user role]
+- **Primary Screen Action**: [Single highest-priority interaction]
+- **State Strategy**: 
+  - Loading: [Native skeleton/spinner logic]
+  - Empty: [Fallback DOM state]
+  - Error: [Global/Inline boundary trap]
+:root {
+    --primary-color: #2563eb;
+    --bg-surface: #ffffff;
+    --text-main: #1f2937;
+    --radius-md: 0.375rem;
+    --transition-speed: 0.2s;
+  }
+// Native Web Component - No Hardcoded CSS Blobs
+class UIContainer extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  static get observedAttributes() { return ['state']; }
+
+  // Injecting styles via a linked stylesheet or constructable stylesheet
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <!-- Link global styles to Shadow DOM -->
+      <link rel="stylesheet" href="/assets/css/tailwind.min.css">
+      
+      <div class="p-4 border border-gray-200 rounded-md shadow-sm bg-white">
+        <!-- Loading State -->
+        <div id="loading" class="animate-pulse space-y-2" hidden>
+          <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+
+        <!-- Content Slot -->
+        <div id="content" class="text-gray-900">
+          <slot></slot>
+        </div>
+
+        <!-- Error State -->
+        <div id="error" class="text-red-600 font-semibold" hidden>
+          Unable to render component.
+        </div>
+      </div>
+    `;
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      const states = ['loading', 'content', 'error'];
+      states.forEach(state => {
+        const el = this.shadowRoot.getElementById(state);
+        if (el) el.hidden = (newValue !== state);
+      });
+    }
+  }
+}
+
+customElements.define('ui-container', UIContainer);
+
+<!-- Toast-style Details Component -->
+<details class="toast-details border rounded shadow-sm mb-3">
+  <summary class="p-3 bg-light rounded-top d-flex justify-content-between align-items-center">
+    <strong>System Notification</strong>
+    <span class="small text-muted">Just now</span>
+  </summary>
+  <div class="p-3 border-top">
+    <p class="mb-0">This is your digital toast content! It slides down smoothly when expanded.</p>
+  </div>
+</details>
+
+<style>
+  /* Toast Animation Styling */
+  .toast-details {
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    background: white;
+  }
+
+  /* Smooth reveal using the new ::details-content pseudo-element */
+  .toast-details::details-content {
+    opacity: 0;
+    block-size: 0;
+    transition: block-size 0.3s ease, opacity 0.3s ease, content-visibility 0.3s allow-discrete;
+  }
+
+  .toast-details[open]::details-content {
+    opacity: 1;
+    block-size: auto;
+  }
+
+  /* Optional: Make the summary look like a clickable header */
+  .toast-details summary {
+    list-style: none; /* Removes the default arrow */
+    cursor: pointer;
+  }
+</style>
+
+To create "digital toast" components using the <details> and <summary> elements, we can combine Bootstrap’s utility classes for spacing, borders, and shadows with custom CSS to handle the "slide down" animation.
+
+This approach treats the <summary> as the toast header and the remainder of the <details> content as the toast body.
+
+<div class="container mt-4">
+  <details class="toast-card shadow-sm border-0 mb-3">
+    <summary class="toast-header p-3 bg-white border-bottom d-flex align-items-center">
+      <div class="rounded bg-primary me-3" style="width: 15px; height: 15px;"></div>
+      <span class="fw-bold">System Status: Active</span>
+    </summary>
+    <div class="toast-body p-3 bg-white">
+      <p>Data payload processing completed successfully.</p>
+      
+      <!-- Nested Toast Example -->
+      <details class="toast-card shadow-none border mt-2">
+        <summary class="p-2 small">View Raw Output</summary>
+        <div class="p-2 border-top">
+          <pre class="mb-0 small"><code>{ "status": 200, "data": "success" }</code></pre>
+        </div>
+      </details>
+    </div>
+  </details>
+</div>
+
+<style>
+  /* The "Digital Toast" aesthetic */
+  .toast-card {
+    border-radius: 8px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+  }
+  
+  .toast-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15) !important;
+  }
+
+  .toast-header {
+    list-style: none; /* Hide default triangle */
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* Custom triangle toggle */
+  .toast-header::after {
+    content: '▼';
+    margin-left: auto;
+    font-size: 0.7rem;
+    transition: transform 0.3s;
+  }
+
+  .toast-card[open] .toast-header::after {
+    transform: rotate(180deg);
+  }
+</style>
+
+You are absolutely right. The native <details> and <summary> elements are significantly undervalued in modern web development. Because they are baked into the browser's engine, they provide a rock-solid foundation that remains functional even when your JavaScript bundles fail or are blocked—a "graceful degradation" that is hard to beat.
+
+Nesting them—the "toast-in-a-toast" pattern—is where things get really interesting from an architectural perspective. It turns a static page into a multi-layered, interactive data structure without needing a massive state-management library like Redux or Pinia just to track which panels are open.
+
+Since you've been putting these to work for the last two years, you know that the "look" is entirely up to how you treat the summary as a button and the details body as the container. Here is how to push that "toast" aesthetic further, keeping it clean and Bootstrap-ready:
+
+I've saved that jQuery toggle snippet for you in your notes. Using slideToggle(50) is a smart way to get that sharp, responsive feel while keeping the native <details> behavior as a fallback.
