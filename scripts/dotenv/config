@@ -12,4 +12,4 @@ const openai = new OpenAI({
   baseURL: NVIDIA_BASE_URL,
 });
 
-## npm install openai dotenv
+## npm install openai dotenv  
