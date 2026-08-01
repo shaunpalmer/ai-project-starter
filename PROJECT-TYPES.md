@@ -4,6 +4,8 @@ AI: Use this file to classify the project from PROJECT-INTAKE.md and load the co
 
 **Do not prescribe patterns that don't match the type.**
 
+Every type lives in the project lifecycle wrapper defined by `docs/PROJECT-LAYOUT.md`. The folder structures below are code-root shapes: labels such as `/project/`, `/tool/`, or `/api/` mean the configured `code_root`, not the Git repository root. Planning belongs in `00-PLANNING/`, authored code belongs under `src/`, proof belongs in `tests/`, generated assembly belongs in `build/`, and finished delivery artifacts belong in `dist/`.
+
 ---
 
 ## Type 1: WordPress Plugin
@@ -24,9 +26,9 @@ AI: Use this file to classify the project from PROJECT-INTAKE.md and load the co
 - WordPress post/meta for content
 - No additional storage needed
 
-**Folder structure:**
+**Code-root structure (`src/plugin-name/`):**
 ```
-/plugin-name/
+src/plugin-name/
 ├── plugin-name.php (header, bootstrap)
 ├── /includes/ (class-plugin.php, class-activator.php)
 ├── /admin/ (admin page, settings)
@@ -36,6 +38,8 @@ AI: Use this file to classify the project from PROJECT-INTAKE.md and load the co
 ├── /adapters/ (external integrations)
 └── /templates/ (front-end output)
 ```
+
+Package the verified `plugin-name/` directory as `dist/plugin-name-{version}.zip`; the ZIP has exactly one top-level `plugin-name/` folder and excludes harness, planning, project documentation, tests, secrets, and development tooling.
 
 **Skills to load:**
 - `wordpress-plugin` (mandatory)

@@ -68,11 +68,15 @@ The agent repairs stale semantic documentation. The control script detects struc
 
 ## Destination contract
 
-The canonical workspace is not the runtime deployment folder:
+The harness, canonical workspace, release staging, distribution, and runtime deployment are separate:
 
 ```text
-workspace root/project-slug/      canonical source and Git repository
-deployment root/project-slug/     optional local runtime target
+harness root/                     reusable controller; no product code
+workspace root/project-slug/      canonical project and Git repository
+project root/src/                 authored product source
+project root/build/               disposable release staging
+project root/dist/                verified distribution artifacts
+deployment root/project-slug/     optional external runtime target
 ```
 
-Preview a destination before creating it. Creation refuses path traversal, refuses the harness repository itself, and refuses a non-empty destination.
+Preview a destination before creating it. Creation refuses path traversal, refuses the harness repository itself, refuses a non-empty destination, and creates the lifecycle layout defined in `docs/PROJECT-LAYOUT.md`.

@@ -73,7 +73,14 @@ Use the `project-memory` skill for resume, checkpoint, reconcile, and pivot work
 
 ## Destination rules
 
-The harness repository, canonical project source, and deployment target are different concerns. Resolve and preview an absolute workspace destination before creating project files. Never generate a project into whichever directory happens to be active. Never deploy as a side effect of project creation.
+The harness repository, canonical project source, build output, distribution artifacts, and deployment target are different concerns. Follow `docs/PROJECT-LAYOUT.md`.
+
+- Resolve and preview an absolute workspace destination before creating project files.
+- Open the returned project root as the VS Code workspace; do not continue product development from the harness directory.
+- Plan in `00-PLANNING/`. After the Alignment Ladder passes, write authored product code only under the configured `code_root`.
+- Treat `build/` as disposable assembly and `dist/` as verified delivery output. Never hand-edit either as canonical source.
+- Never generate a project into whichever directory happens to be active.
+- Never deploy as a side effect of project creation or packaging.
 
 ## Prohibited actions
 

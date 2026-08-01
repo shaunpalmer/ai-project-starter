@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "timestamp": "2026-08-01T04:25:43.253Z",
+  "summary": "Added an external project lifecycle scaffold with project-local guidance, explicit source ownership, and a WordPress dist package contract.",
+  "next_action": "Review the focused lifecycle PR, then trial one generated WordPress project in VS Code.",
+  "verification": "npm test: 7 passed; control:verify passed; node syntax passed; temporary WordPress scaffold matched the contract",
+  "git": {
+    "branch": "agent/project-control-memory",
+    "head": "53c4b71",
+    "status": "M .harness/state/active-task.json\n M AGENTS.md\n M AI-NOTES.md\n M CHANGELOG.md\n M CURRENT-PLAN.md\n M PROJECT-TYPES.md\n M README.md\n M docs/CURRENT-STATE.md\n M docs/PROJECT-CONTROL.md\n M scripts/project-control.js\n M test/project-control.test.js\n?? docs/PROJECT-LAYOUT.md\n?? docs/decisions/ADR-0002-project-lifecycle-layout.md"
+  }
+}

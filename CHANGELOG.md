@@ -11,6 +11,8 @@ This file records meaningful user-facing harness changes. Git remains the source
 - File-backed resume, checkpoint, and verification commands.
 - Controlled Pivot Loop and ADR history contract.
 - Safe project destination preview and creation.
+- Type-aware project lifecycle scaffolding with separate planning, source, test, build, distribution, and deployment ownership.
+- WordPress distribution contract for a slug-rooted installable ZIP in `dist/`.
 - Automated project-control tests.
 
 ### Changed
