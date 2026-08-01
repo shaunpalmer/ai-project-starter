@@ -1,15 +1,15 @@
 {
   "schema_version": 1,
-  "id": "project-control-foundation",
-  "goal": "Implement the agreed alignment, memory, pivot, decision-rights, and destination foundation.",
+  "id": "project-lifecycle-layout",
+  "goal": "Give generated projects explicit planning, source, test, build, distribution, and deployment boundaries outside the harness.",
   "status": "completed",
   "alignment": [
-    { "gate": "destination", "answer": "YES", "evidence": "The target is the ai-project-starter harness on agent/project-control-memory." },
-    { "gate": "evidence", "answer": "YES", "evidence": "Repository structure, operating manual, planning gates, scripts, and executable failures were inspected." },
-    { "gate": "boundaries", "answer": "YES", "evidence": "The change is limited to the first project-control slice approved by Shaun." },
-    { "gate": "ownership", "answer": "YES", "evidence": "Control documents live in docs; state lives in .harness/state; deterministic commands live in scripts." },
-    { "gate": "minimum_slice", "answer": "YES", "evidence": "The slice uses files and a zero-dependency CLI; external memory and deployment are deferred." },
-    { "gate": "debt_control", "answer": "YES", "evidence": "Schemas are versioned, paths are bounded, and behaviour is covered by node:test." },
-    { "gate": "proof", "answer": "YES", "evidence": "npm test, control verification, resume, lock status, and destination preview passed on 2026-08-01." }
+    { "gate": "destination", "answer": "YES", "evidence": "PR #1 is merged; this second slice targets a focused project-lifecycle branch from the new main." },
+    { "gate": "evidence", "answer": "YES", "evidence": "The destination command, project-type layouts, ignore rules, current memory, and generated WordPress tree were inspected." },
+    { "gate": "boundaries", "answer": "YES", "evidence": "The slice scaffolds and documents project lifecycle ownership; it does not package, deploy, merge, or release." },
+    { "gate": "ownership", "answer": "YES", "evidence": "The harness is the factory, each project is the working root, src is canonical code, build is disposable, and dist is delivery output." },
+    { "gate": "minimum_slice", "answer": "YES", "evidence": "One type-aware scaffold extends the existing zero-dependency destination command without adding a build system." },
+    { "gate": "debt_control", "answer": "YES", "evidence": "Generated directories have single responsibilities, WordPress packaging rules are explicit, and project guidance travels with the scaffold." },
+    { "gate": "proof", "answer": "YES", "evidence": "Seven behavioural tests, control verification, a real temporary WordPress scaffold, and filesystem inspection passed on 2026-08-01." }
   ]
 }

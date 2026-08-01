@@ -52,7 +52,17 @@ npm run destination -- \
   --deploy-root /var/www/html/wordpress/wp-content/plugins
 ```
 
-Add `--create` only after the displayed paths are correct. Creation writes project-control state into an empty canonical source directory. It does not deploy or copy files into WordPress.
+Add `--create` only after the displayed paths are correct. Creation writes a project-local `AGENTS.md`, intake and memory starters, project-control state, and the standard `00-PLANNING/`, `docs/`, `src/`, `tests/`, `build/`, and `dist/` lifecycle folders into an empty canonical project directory. It does not deploy or copy files into WordPress.
+
+For a WordPress plugin, the command reports these distinct paths:
+
+- `working_directory`: open this project root in VS Code;
+- `code_root`: author the plugin under `src/<plugin-slug>/`;
+- `build_root`: assemble a disposable installable tree here;
+- `distribution_root`: place the verified `<plugin-slug>-<version>.zip` here;
+- `deploy_destination`: optional external WordPress runtime path.
+
+See `docs/PROJECT-LAYOUT.md` for the complete folder ownership and packaging contract.
 
 ## Memory model
 
@@ -69,4 +79,4 @@ See `docs/PROJECT-CONTROL.md` for the Alignment Ladder, Controlled Pivot Loop, s
 
 ## Current boundary
 
-This first slice creates and validates the control state. Copying the full starter into a new destination, runtime deployment adapters, and semantic retrieval are deliberately deferred until a real VS Code trial proves they are needed.
+This slice creates and validates control state plus the project lifecycle scaffold. Reproducible packaging commands, runtime deployment adapters, and semantic retrieval remain separate slices; project creation never performs those actions implicitly.

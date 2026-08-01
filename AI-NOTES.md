@@ -21,6 +21,7 @@
 
 | Date | Change | Why |
 |------|--------|-----|
+| 2026-08-01 | Added project lifecycle layout and type-aware destination scaffold | Keep product work outside the harness and distinguish planning, source, proof, disposable build files, distributable packages, and deployment |
 | 2026-08-01 | Added unified project-control foundation | Preserve alignment, decision rights, memory, pivots, and safe destinations across sessions |
 | 2026-08-01 | Replaced executable SQLite memory demo with file-backed resume/checkpoint commands | Avoid fake seeded memory and make checked-in truth authoritative |
 | 2026-08-01 | Reconciled `AGENTS.md`, README, and touched Node command paths | Remove contradictory instructions and the ES module/CommonJS runtime failure |
@@ -33,6 +34,7 @@
 
 | # | Decision | Rationale | Date |
 |---|----------|-----------|------|
+| 2 | Use `00-PLANNING/`, `src/`, `tests/`, `build/`, and `dist/` in each external project | Gives the agent explicit folder ownership and produces clean release artifacts without mixing product code into the harness | 2026-08-01 |
 | 1 | Use files + JSON + Git + a zero-dependency CLI for memory v1 | Transparent, versioned, sufficient at current scale, and testable without an external service | 2026-08-01 |
 
 ---

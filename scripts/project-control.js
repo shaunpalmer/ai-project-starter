@@ -222,6 +222,188 @@ function assertSafeDestination(workspaceRoot, destination) {
   }
 }
 
+function projectLayout(type, slug, projectDestination, deployDestination) {
+  const isWordPressPlugin = type === 'wordpress-plugin';
+  const relative = {
+    harness: '.harness',
+    planning: '00-PLANNING',
+    documentation: 'docs',
+    decisions: path.join('docs', 'decisions'),
+    source: isWordPressPlugin ? path.join('src', slug) : 'src',
+    tests: 'tests',
+    build: 'build',
+    distribution: 'dist',
+  };
+
+  return {
+    working_directory: projectDestination,
+    planning_root: path.join(projectDestination, relative.planning),
+    code_root: path.join(projectDestination, relative.source),
+    test_root: path.join(projectDestination, relative.tests),
+    build_root: path.join(projectDestination, relative.build),
+    distribution_root: path.join(projectDestination, relative.distribution),
+    deploy_destination: deployDestination,
+    relative,
+    release: isWordPressPlugin
+      ? {
+          format: 'zip',
+          artifact_pattern: `${slug}-{version}.zip`,
+          archive_root: slug,
+          ship_from: relative.source,
+        }
+      : {
+          format: 'type-specific',
+          artifact_pattern: `${slug}-{version}.{format}`,
+          archive_root: null,
+          ship_from: relative.build,
+        },
+    next_action: `Open ${projectDestination} as the VS Code workspace; plan in ${relative.planning} and write product code only in ${relative.source}.`,
+  };
+}
+
+function projectGuidanceFiles(project, layout) {
+  const sourcePath = layout.relative.source.split(path.sep).join('/');
+  const createdAt = new Date().toISOString();
+  return {
+    'AGENTS.md': `# ${project.name} — Agent Contract
+
+This is the canonical product project. The reusable starter created it, but product code belongs here—not in the starter repository.
+
+## Entry order
+
+1. Read \`docs/NORTH-STAR.md\`.
+2. Read \`docs/CURRENT-STATE.md\`.
+3. Read \`.harness/project.json\` and \`.harness/state/active-task.json\`.
+4. Complete \`00-PLANNING/PROJECT-INTAKE.md\` and the design envelope before coding.
+5. Inspect relevant source, tests, decisions, and Git history.
+
+## Folder ownership
+
+- Plan in \`00-PLANNING/\`.
+- Write canonical product code only in \`${sourcePath}/\`.
+- Put proof in \`tests/\`.
+- Treat \`build/\` as disposable generated assembly; never hand-edit it.
+- Put only finished, verified delivery artifacts in \`dist/\`.
+- Treat any deployment path as external runtime state, never as canonical source.
+
+## Development behaviour
+
+- Make routine, reversible implementation decisions autonomously and prove them.
+- Ask Shaun only about purpose, architecture, language, framework, database, providers, material cost, security boundaries, scope pivots, destructive actions, merges, deployments, or releases.
+- Do not start product code until all seven Alignment Ladder gates are \`YES\`.
+- Reconcile current state, decisions, tests, and implementation at meaningful checkpoints.
+- Never merge, deploy, publish, spend credits, or mutate production without explicit approval.
+`,
+    '00-PLANNING/PROJECT-INTAKE.md': `# Project Intake
+
+Project: ${project.name}
+Slug: \`${project.slug}\`
+Type: \`${project.type}\`
+
+Complete these five items before execution:
+
+1. **Purpose and commercial reason:**
+2. **Confirmed project type:**
+3. **First useful working slice:**
+4. **Default stack or explicit override:**
+5. **Done condition:**
+
+Optional only when the agent would otherwise guess incorrectly:
+
+- External integrations:
+- Users or authentication:
+- Hard constraints:
+- Data volume:
+`,
+    'docs/NORTH-STAR.md': `# North Star
+
+## Project purpose
+
+To be completed from \`00-PLANNING/PROJECT-INTAKE.md\` before execution.
+
+## Invariants
+
+- Product code remains inside \`${sourcePath}/\`.
+- Build and distribution output never becomes canonical source.
+- Consequential decisions remain with Shaun; routine development remains with Athena.
+
+## Success condition
+
+To be defined during intake.
+`,
+    'docs/CURRENT-STATE.md': `# Current State
+
+Last verified: ${createdAt}
+
+## Current truth
+
+The project lifecycle scaffold exists. No product implementation has started.
+
+## Known boundaries
+
+- The intake and North Star are incomplete.
+- The active task remains blocked until every Alignment Ladder gate has evidence.
+- Project creation did not build, package, deploy, or publish anything.
+
+## Next action
+
+Complete \`00-PLANNING/PROJECT-INTAKE.md\`, establish the North Star, and define the first useful slice.
+`,
+  };
+}
+
+function createProjectScaffold(projectDestination, project, layout) {
+  const persistentDirectories = [
+    layout.relative.planning,
+    layout.relative.decisions,
+    layout.relative.source,
+    layout.relative.tests,
+    path.join(layout.relative.harness, 'state', 'checkpoints'),
+  ];
+  const generatedDirectories = [layout.relative.build, layout.relative.distribution];
+
+  for (const relativePath of [...persistentDirectories, ...generatedDirectories]) {
+    fs.mkdirSync(path.join(projectDestination, relativePath), { recursive: true });
+  }
+
+  for (const relativePath of persistentDirectories) {
+    fs.writeFileSync(path.join(projectDestination, relativePath, '.gitkeep'), '');
+  }
+
+  for (const relativePath of generatedDirectories) {
+    fs.writeFileSync(path.join(projectDestination, relativePath, '.gitkeep'), '');
+  }
+
+  const gitignore = [
+    '# Local secrets',
+    '.env',
+    '.env.*',
+    '!.env.example',
+    '',
+    '# Dependencies and generated files',
+    'node_modules/',
+    'vendor/',
+    `${layout.relative.build}/*`,
+    `!${layout.relative.build}/.gitkeep`,
+    `${layout.relative.distribution}/*`,
+    `!${layout.relative.distribution}/.gitkeep`,
+    '',
+    '# Runtime files',
+    'logs/',
+    '*.log',
+    '*.sqlite',
+    '*.sqlite3',
+    '.DS_Store',
+    'Thumbs.db',
+    '',
+  ].join('\n');
+  fs.writeFileSync(path.join(projectDestination, '.gitignore'), gitignore, { flag: 'wx' });
+
+  for (const [relativePath, content] of Object.entries(projectGuidanceFiles(project, layout))) {
+    fs.writeFileSync(path.join(projectDestination, relativePath), content, { flag: 'wx' });
+  }
+}
+
 function destination(args) {
   const slug = args.slug;
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
@@ -234,20 +416,24 @@ function destination(args) {
   const projectDestination = path.resolve(workspaceRoot, slug);
   assertSafeDestination(workspaceRoot, projectDestination);
   const deployDestination = args['deploy-root'] ? path.resolve(args['deploy-root'], slug) : null;
+  const name = String(args.name ?? slug).replace(/\s+/g, ' ').trim() || slug;
+  const type = args.type ?? 'unspecified';
+  const layout = projectLayout(type, slug, projectDestination, deployDestination);
   const result = {
-    name: args.name ?? slug,
+    name,
     slug,
-    type: args.type ?? 'unspecified',
+    type,
     workspace_root: workspaceRoot,
     project_destination: projectDestination,
     deploy_destination: deployDestination,
+    layout,
     action: args.create ? 'create' : 'preview',
   };
   if (args.create) {
     if (fs.existsSync(projectDestination) && fs.readdirSync(projectDestination).length > 0) {
       throw new Error(`Destination already exists and is not empty: ${projectDestination}`);
     }
-    fs.mkdirSync(path.join(projectDestination, '.harness', 'state'), { recursive: true });
+    createProjectScaffold(projectDestination, result, layout);
     fs.writeFileSync(path.join(projectDestination, '.harness', 'project.json'), `${JSON.stringify({ schema_version: 1, ...result }, null, 2)}\n`, { flag: 'wx' });
     fs.writeFileSync(path.join(projectDestination, '.harness', 'state', 'active-task.json'), `${JSON.stringify({
       schema_version: 1,
