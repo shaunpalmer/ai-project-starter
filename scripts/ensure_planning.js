@@ -6,11 +6,12 @@
  * * It fails when required planning files are missing, empty, or still unresolved.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // Replicates Path(__file__).resolve().parents[1] assuming script lives in /scripts
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const REQUIRED_FILES = [
     "PROJECT-INTAKE.md",

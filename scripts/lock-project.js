@@ -1,15 +1,15 @@
 // scripts/lock-project.js
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const LOCK_FILE = path.join(process.cwd(), '.planning-lock');
 const TARGET_DIR = path.join(process.cwd(), 'src');
 
 function ensurePlanning() {
     try {
-        // Run your planning verification script
-        const { execSync } = require('child_process');
-        execSync('node scripts/ensure_planning.js', { stdio: 'inherit' });
+        execFileSync(process.execPath, ['scripts/ensure_planning.js'], { stdio: 'inherit' });
+        execFileSync(process.execPath, ['scripts/project-control.js', 'verify'], { stdio: 'inherit' });
         return true;
     } catch (err) {
         return false;
