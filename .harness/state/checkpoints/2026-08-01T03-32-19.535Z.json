@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "timestamp": "2026-08-01T03:32:19.535Z",
+  "summary": "Implemented and verified the project-control foundation: alignment, decision rights, persistent memory, controlled pivots, and safe destinations.",
+  "next_action": "Trial one real project in VS Code through a full harness loop.",
+  "verification": "npm test: 6 passed; control:verify passed; status and destination preview passed",
+  "git": {
+    "branch": "agent/project-control-memory",
+    "head": "7ba9221",
+    "status": "M .gitignore\n M AGENTS.md\n M AI-NOTES.md\n M README.md\n M package.json\n M scripts/ensure_planning.js\n M scripts/lock-project.js\n D scripts/memory-guard.js\n?? .github/skills/project-memory/\n?? .harness/\n?? CHANGELOG.md\n?? CURRENT-PLAN.md\n?? docs/\n?? scripts/project-control.js\n?? test/"
+  }
+}

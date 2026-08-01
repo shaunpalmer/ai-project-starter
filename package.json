@@ -1,6 +1,6 @@
 {
   "name": "ai-project-starter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "AI-assisted project planning harness with skills, planning gates, and execution controls.",
   "main": "scripts/harness-init.js",
   "type": "module",
@@ -9,7 +9,13 @@
     "lock": "node scripts/lock-project.js lock",
     "unlock": "node scripts/lock-project.js unlock",
     "status": "node scripts/lock-project.js status",
-    "memory-summary": "node scripts/memory-guard.js"
+    "control:verify": "node scripts/project-control.js verify",
+    "memory:resume": "node scripts/project-control.js resume",
+    "memory-summary": "node scripts/project-control.js resume",
+    "memory:checkpoint": "node scripts/project-control.js checkpoint",
+    "decision": "node scripts/project-control.js decision",
+    "destination": "node scripts/project-control.js destination",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20.0.0"

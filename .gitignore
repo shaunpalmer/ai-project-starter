@@ -58,7 +58,6 @@ output/
 ai_memory.db
 .planning-lock
 CURRENT-SKILLS-NOTE.md
-CURRENT-PLAN.md
 
 # Node.js
 node_modules/

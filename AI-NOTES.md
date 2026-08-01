@@ -21,7 +21,9 @@
 
 | Date | Change | Why |
 |------|--------|-----|
-|      |        |     |
+| 2026-08-01 | Added unified project-control foundation | Preserve alignment, decision rights, memory, pivots, and safe destinations across sessions |
+| 2026-08-01 | Replaced executable SQLite memory demo with file-backed resume/checkpoint commands | Avoid fake seeded memory and make checked-in truth authoritative |
+| 2026-08-01 | Reconciled `AGENTS.md`, README, and touched Node command paths | Remove contradictory instructions and the ES module/CommonJS runtime failure |
 
 ---
 
@@ -31,7 +33,7 @@
 
 | # | Decision | Rationale | Date |
 |---|----------|-----------|------|
-| 1 |          |           |      |
+| 1 | Use files + JSON + Git + a zero-dependency CLI for memory v1 | Transparent, versioned, sufficient at current scale, and testable without an external service | 2026-08-01 |
 
 ---
 
@@ -40,7 +42,7 @@
 > Parameters or choices that could not be resolved from the documents. Owner must answer.
 > Move each to Decisions once resolved.
 
-- [ ]
+- None recorded.
 
 ---
 
