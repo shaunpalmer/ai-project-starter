@@ -1,9 +1,9 @@
 // scripts/harness-init.js
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
+import { fileURLToPath } from 'node:url';
 
-const PROJECT_ROOT = process.cwd();
+const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 const requiredDirs = [
   'src',
@@ -45,17 +45,21 @@ function checkRequiredFiles() {
   } else {
     console.log('\n✅ All core files present.');
   }
+  return missing.length === 0;
 }
 
 function main() {
   console.log('🚀 Initializing AI Project Harness...\n');
 
+  // Validate before making changes so incomplete copies fail without a success message.
+  if (!checkRequiredFiles()) {
+    process.exitCode = 1;
+    return;
+  }
+
   // Create required directories
   console.log('📁 Ensuring directory structure...');
   requiredDirs.forEach(ensureDirectory);
-
-  // Check core files
-  checkRequiredFiles();
 
   // Create lock file by default (forces planning first)
   const lockFile = path.join(PROJECT_ROOT, '.planning-lock');
