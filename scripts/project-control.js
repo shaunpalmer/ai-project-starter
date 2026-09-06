@@ -109,13 +109,30 @@ function resume() {
 }
 
 function verifyAlignment(task, failures) {
-  if (!task || typeof task !== 'object') {
+  if (!task || typeof task !== 'object' || Array.isArray(task)) {
     failures.push('Active task state is missing.');
     return;
   }
-  if (!task.id || !task.goal || !task.status) failures.push('Active task requires id, goal, and status.');
-  if (task.status && !TASK_STATUSES.has(task.status)) failures.push(`Active task has invalid status: ${task.status}`);
-  const gates = new Map((task.alignment ?? []).map((gate) => [gate.gate, gate]));
+  if (task.schema_version !== 1) failures.push('Active task requires schema_version: 1.');
+  for (const field of ['id', 'goal', 'status']) {
+    if (typeof task[field] !== 'string' || !task[field].trim()) {
+      failures.push(`Active task requires a non-empty ${field}.`);
+    }
+  }
+  if (!TASK_STATUSES.has(task.status)) failures.push(`Active task has invalid status: ${task.status}`);
+  if (!Array.isArray(task.alignment)) {
+    failures.push('Active task alignment must be an array.');
+    return;
+  }
+  const gates = new Map();
+  for (const gate of task.alignment) {
+    if (!gate || !BLOCKING_GATES.includes(gate.gate)) {
+      failures.push('Alignment contains an unknown or malformed gate.');
+      continue;
+    }
+    if (gates.has(gate.gate)) failures.push(`Duplicate alignment gate: ${gate.gate}`);
+    gates.set(gate.gate, gate);
+  }
   for (const requiredGate of BLOCKING_GATES) {
     const gate = gates.get(requiredGate);
     if (!gate) {
@@ -123,9 +140,9 @@ function verifyAlignment(task, failures) {
       continue;
     }
     if (!ANSWERS.has(gate.answer)) failures.push(`Alignment gate ${requiredGate} has invalid answer: ${gate.answer}`);
-    if (!gate.evidence) failures.push(`Alignment gate ${requiredGate} requires evidence.`);
-    if (task.status === 'ready' && gate.answer !== 'YES') {
-      failures.push(`Ready task has blocking ${gate.answer} gate: ${requiredGate}`);
+    if (typeof gate.evidence !== 'string' || !gate.evidence.trim()) failures.push(`Alignment gate ${requiredGate} requires evidence.`);
+    if (['ready', 'in_progress', 'completed'].includes(task.status) && gate.answer !== 'YES') {
+      failures.push(`${task.status} task has blocking ${gate.answer} gate: ${requiredGate}`);
     }
   }
 }
@@ -213,12 +230,40 @@ function decision(args) {
   console.log(JSON.stringify({ kind: args.kind, owner: selected[0], action: selected[1] }, null, 2));
 }
 
-function assertSafeDestination(workspaceRoot, destination) {
-  if (!path.isAbsolute(workspaceRoot)) throw new Error('Workspace root must be an absolute path.');
-  if (path.resolve(destination) === ROOT) throw new Error('Project destination cannot be the harness repository.');
-  const relative = path.relative(workspaceRoot, destination);
-  if (!relative || relative.startsWith('..') || path.isAbsolute(relative)) {
+// Resolve existing symlinks while retaining a not-yet-created suffix.
+function canonicalPath(candidate) {
+  try {
+    return fs.realpathSync(candidate);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    if (fs.lstatSync(candidate, { throwIfNoEntry: false })?.isSymbolicLink()) {
+      throw new Error(`Dangling symlink in destination: ${candidate}`);
+    }
+    const parent = path.dirname(candidate);
+    if (parent === candidate) throw error;
+    return path.join(canonicalPath(parent), path.basename(candidate));
+  }
+}
+
+function isWithin(parent, candidate) {
+  const relative = path.relative(parent, candidate);
+  return relative === '' || (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative));
+}
+
+function assertSafeDestination(workspaceRoot, destination, deployDestination) {
+  const canonicalDestination = canonicalPath(destination);
+  const canonicalWorkspace = canonicalPath(workspaceRoot);
+  if (isWithin(canonicalPath(ROOT), canonicalDestination)) {
+    throw new Error('Project destination cannot be inside the harness repository.');
+  }
+  if (canonicalDestination === canonicalWorkspace || !isWithin(canonicalWorkspace, canonicalDestination)) {
     throw new Error('Project destination must be a child of the configured workspace root.');
+  }
+  if (deployDestination) {
+    const canonicalDeployment = canonicalPath(deployDestination);
+    if (isWithin(canonicalDestination, canonicalDeployment) || isWithin(canonicalDeployment, canonicalDestination)) {
+      throw new Error('Project and deployment destinations must not overlap.');
+    }
   }
 }
 
@@ -409,13 +454,23 @@ function destination(args) {
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     throw new Error('destination requires a lowercase kebab-case --slug.');
   }
-  const workspaceRoot = path.resolve(args['workspace-root'] ?? process.env.HARNESS_WORKSPACE_ROOT ?? '');
-  if (!args['workspace-root'] && !process.env.HARNESS_WORKSPACE_ROOT) {
+  const workspaceInput = args['workspace-root'] ?? process.env.HARNESS_WORKSPACE_ROOT;
+  if (!workspaceInput) {
     throw new Error('Provide --workspace-root or HARNESS_WORKSPACE_ROOT.');
   }
+  if (typeof workspaceInput !== 'string' || !path.isAbsolute(workspaceInput)) {
+    throw new Error('Workspace root must be an absolute path.');
+  }
+  if (args['deploy-root'] !== undefined && (typeof args['deploy-root'] !== 'string' || !path.isAbsolute(args['deploy-root']))) {
+    throw new Error('Deployment root must be an absolute path.');
+  }
+  if (args.create !== undefined && args.create !== true) {
+    throw new Error('--create is a flag without a value; omit it for a preview.');
+  }
+  const workspaceRoot = path.resolve(workspaceInput);
   const projectDestination = path.resolve(workspaceRoot, slug);
-  assertSafeDestination(workspaceRoot, projectDestination);
   const deployDestination = args['deploy-root'] ? path.resolve(args['deploy-root'], slug) : null;
+  assertSafeDestination(workspaceRoot, projectDestination, deployDestination);
   const name = String(args.name ?? slug).replace(/\s+/g, ' ').trim() || slug;
   const type = args.type ?? 'unspecified';
   const layout = projectLayout(type, slug, projectDestination, deployDestination);

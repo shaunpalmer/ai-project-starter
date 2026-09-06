@@ -12,7 +12,7 @@ Every active task records seven evidence-backed gates. Valid answers are `YES`, 
 6. `debt_control` — reuse, security, testing, and future-change risks are addressed.
 7. `proof` — a concrete verification and stop condition exist.
 
-A ready task requires `YES` on every gate. `NO` routes back to planning. `UNKNOWN` triggers evidence gathering and asks Shaun only if the missing answer belongs to him under the Decision Rights Contract.
+A `ready`, `in_progress`, or `completed` task requires `YES` on every gate. Each of the seven gates must occur exactly once with non-empty evidence. State uses `schema_version: 1`. A `blocked` task can record `NO` or `UNKNOWN`; changing its status cannot bypass unresolved gates. `UNKNOWN` triggers evidence gathering and asks Shaun only if the missing answer belongs to him under the Decision Rights Contract.
 
 ## Controlled Pivot Loop
 
@@ -79,4 +79,6 @@ project root/dist/                verified distribution artifacts
 deployment root/project-slug/     optional external runtime target
 ```
 
-Preview a destination before creating it. Creation refuses path traversal, refuses the harness repository itself, refuses a non-empty destination, and creates the lifecycle layout defined in `docs/PROJECT-LAYOUT.md`.
+Preview a destination before creating it. Workspace and optional deployment roots must be absolute. The CLI resolves existing symlinks, rejects destinations inside the harness or outside the configured workspace, rejects overlapping source/deployment paths, and refuses a non-empty destination. `--create` is a valueless flag; omitting it previews without writing. Creation follows `docs/PROJECT-LAYOUT.md`.
+
+These checks are for a trusted local filesystem. They are not an OS sandbox and do not defend against another process swapping symlinks during a command. The `.planning-lock` file is also advisory; it cannot prevent an editor or another tool from writing source.

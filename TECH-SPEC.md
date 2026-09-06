@@ -2,6 +2,10 @@
 
 > Workers must not deviate from stack choices documented here without architect sign-off.
 
+## Harness maintenance tooling (2026-09-05)
+
+The reusable controller retains Node.js, its built-in test runner, and Markdown/JSON storage without runtime dependencies. `.github/workflows/harness-checks.yml` runs the same tests, control verification, and resume command on Node 20, 22, and 24 for pull requests and main. Official checkout/setup-node actions are pinned to verified commits, with read-only repository permissions and no package installation. This provides repeatable proof for the GitHub review requested by Shaun. The product stack template below remains unfilled for the next intake.
+
 ## Machine-Readable Stack Markers
 
 Fill with actual values only (remove examples):
