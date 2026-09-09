@@ -6,32 +6,32 @@ This file records meaningful user-facing harness changes. Git remains the source
 
 ### Added
 
-- `HARNESS-MANIFEST.json` as the versioned managed-file/ownership contract for embedded harness updates.
-- Project-local lifecycle commands: `harness doctor`, `harness update --check`, `harness update --apply`, and `harness adopt`.
-- Three-way harness updates using installed baseline vs project-local file vs latest upstream file.
-- `.harness/baseline/` snapshots and schema-v2 `.harness/handoff.json` lifecycle metadata in generated projects.
-- Legacy harness adoption that reconstructs a trusted baseline from the final source commit carrying the installed package version.
-- `.github/skills/command-line/SKILL.md` for non-interactive CLI inspection, project-scoped installs/updates, and safe host-boundary rules.
-- `docs/HARNESS-LIFECYCLE.md` and ADR-0005 documenting the managed lifecycle/updater model.
-- Regression coverage for non-mutating update checks, automatic replacement/addition, clean three-way merges, blocking conflicts, CLI doctor behaviour, legacy adoption, and lifecycle-aware project handoff.
-- `ENGINEERING-DEFAULTS.md` as the routine engineering operating policy, including language/runtime defaults, architecture defaults, testing/failure rules, question budget, version-control expectations, command-line operation, and harness lifecycle rules.
+- `HARNESS-MANIFEST.json` as the versioned managed-file manifest for embedded harness lifecycle updates.
+- `scripts/harness.js` and `scripts/harness-update.js` with doctor, adopt, three-way update check/apply, lifecycle branches, baseline refresh, and focused update checkpoints.
+- `.github/skills/command-line/SKILL.md` for deterministic terminal, runtime, package-manager, install/update, and verification behaviour.
+- Exact generated-project lifecycle baselines under `.harness/baseline/` and schema-v2 `.harness/handoff.json` metadata.
+- Regression coverage for non-mutating update checks, safe replace/add/three-way merge, real-conflict refusal, doctor capability reporting, legacy adoption, and generated handoff lifecycle installation.
+- ADR-0005 and `docs/HARNESS-LIFECYCLE.md` documenting managed harness ownership, three-way updates, legacy adoption, and command-line capability.
+- `ENGINEERING-DEFAULTS.md` as the routine engineering operating policy, including language/runtime defaults, architecture defaults, testing/failure rules, question budget, and version-control expectations.
 - Deterministic `scripts/vcs-control.js` for non-interactive Git status, preflight, local init, safe work branches, focused checkpoints, existing-credential remote verification, and non-default branch push.
+- Regression coverage for VCS branch safety, explicit staging, protected-branch refusal, preflight failure, and credential-bearing remote URLs.
 - ADR-0004 documenting engineering defaults and deterministic version control.
 - Infer-before-implement discovery flow for natural-language and unfamiliar projects.
 - `SYSTEM-MODEL.md` and `ARCHITECTURE-HYPOTHESIS.md` planning artifacts.
 - Eighth `system_model` Alignment Ladder gate and task schema v2.
 - Hybrid capability composition and confidence-based project-shape reasoning.
 - Generated-project `scripts/project-ready.mjs` readiness verifier.
+- Regression coverage for draft discovery artifacts, hybrid/infer scaffolds, and eight-gate readiness.
 - ADR-0003 documenting the infer-before-implement architecture.
 
 ### Changed
 
-- Package version advanced to 0.5.0.
-- Generated-project handoff now installs lifecycle controls, command-line skill, exact baselines, schema-v2 lifecycle state, and a managed agent-contract block.
-- Generated projects create a bootstrap Git checkpoint when Git identity is already configured; otherwise handoff reports the exact identity blocker instead of inventing credentials.
-- Skill routing automatically binds command-line/lifecycle work as well as WordPress and scraping ecosystem rules.
-- Natural-language phrases such as `harness update`, `upgrade the harness`, `harness doctor`, and `/doctor` map to deterministic lifecycle commands instead of manual copy instructions.
+- Package version advanced to 0.5.0 on the v0.5 lifecycle branch.
+- README, lifecycle docs, CLI help, and agent operating contract now distinguish updating the reusable starter/source Git clone from updating the embedded harness inside a product project.
+- Existing older projects are explicitly bootstrapped from a freshly updated v0.5+ starter clone using `npm run harness -- <command> --cwd /project`; projects are never gutted/replaced just to upgrade the embedded harness.
+- Natural-language lifecycle requests such as `harness update`, `upgrade this project to the latest harness`, `harness doctor`, and `/doctor` are routed according to whether the workspace is the starter source or a generated project.
 - The WordPress Way is consolidated into one authoritative rule set with runtime, architecture, WPCS, security, REST/AJAX, persistence, admin UI, performance, error-handling, and test guidance.
+- Skill routing automatically binds obvious ecosystem skills from confirmed capabilities rather than asking Shaun to activate them.
 - Decision rights distinguish applying an established default from materially deviating from a stack/architecture.
 - The agent contract enforces a zero routine-question budget and treats version control as part of execution.
 - `PROJECT-TYPES.md` is a preset library rather than a mandatory pattern/database/folder router.
@@ -39,17 +39,10 @@ This file records meaningful user-facing harness changes. Git remains the source
 - Scraping guidance describes responsibilities and failure modes rather than mandatory modules.
 - Supported advisory unlock no longer calls the incompatible legacy planning checker and requires a non-blocked execution state.
 
-### Safety behaviour
-
-- `update --check` is non-mutating.
-- Real three-way conflicts block replacement rather than writing conflict markers into the project.
-- Project-only edits are preserved; removed-upstream files are preserved/deprecated rather than blindly deleted.
-- Lifecycle apply requires a clean project Git worktree and configured identity, creates an isolated `harness/update-<version>` branch, stages only intended lifecycle files, verifies the diff, and creates a focused checkpoint.
-- Missing optional command-line tools are reported as unavailable rather than crashing doctor or waiting on hidden prompts.
-
 ### Preserved
 
 - Source/destination separation and WordPress packaging boundaries.
-- Shaun owns consequential architecture deviations, providers, cost, security, machine-wide/root-level mutation, merge, deploy, release, destructive history, and remote-repository lifecycle decisions.
-- Athena owns routine/reversible work, established engineering defaults, project-scoped CLI work, focused commits/checkpoints, and authorised non-default-branch pushes.
+- Shaun owns consequential architecture deviations, providers, cost, security, merge, deploy, release, destructive history, and remote-repository lifecycle decisions.
+- Athena owns routine/reversible work, established engineering defaults, focused commits/checkpoints, authorised non-default-branch pushes, project-scoped CLI work, and conflict-free embedded harness lifecycle updates.
+- Machine-wide/root package/runtime/service/kernel/firewall mutation remains consequential.
 - Legacy experimental scripts remain explicitly unsupported rather than silently promoted into the control plane.
