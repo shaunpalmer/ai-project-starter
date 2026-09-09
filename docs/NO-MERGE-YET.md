@@ -1,1 +1,0 @@
-This branch is implementation work only. Do not merge until the v0.4 pull request is green and Shaun explicitly approves it.
