@@ -32,7 +32,7 @@ function createGeneratedProject(t, type = 'infer') {
   return JSON.parse(result.stdout).project_destination;
 }
 
-test('handoff copies engineering defaults, required skills, VCS control, and binds the generated agent contract', (t) => {
+test('handoff copies managed lifecycle controls and binds the generated agent contract', (t) => {
   const project = createGeneratedProject(t);
   const result = runScript('project-handoff.js', ['--project-root', project]);
   assert.equal(result.status, 0, result.stderr);
@@ -44,15 +44,20 @@ test('handoff copies engineering defaults, required skills, VCS control, and bin
     '.github/skills/wordpress-plugin/SKILL.md',
     '.github/skills/scraping-pipeline/SKILL.md',
     '.github/skills/skill-router/SKILL.md',
+    '.github/skills/command-line/SKILL.md',
     'scripts/vcs-control.mjs',
+    'scripts/harness-update.mjs',
+    'scripts/harness.mjs',
     '.harness/handoff.json',
-  ]) {
-    assert.equal(fs.existsSync(path.join(project, relativePath)), true, relativePath);
-  }
+    '.harness/baseline/ENGINEERING-DEFAULTS.md',
+  ]) assert.equal(fs.existsSync(path.join(project, relativePath)), true, relativePath);
 
   assert.ok(output.copied.includes('ENGINEERING-DEFAULTS.md'));
+  assert.equal(output.harness_version, '0.5.0');
   assert.equal(output.agent_contract, 'appended');
-  assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Harness v0\.4 operating handoff/);
+  assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /<!-- HARNESS:BEGIN -->/);
+  assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /harness\.mjs update --check/);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(project, '.harness', 'handoff.json'), 'utf8')).schema_version, 2);
   assert.equal(output.git.branch, 'work/bootstrap');
   const branch = spawnSync('git', ['branch', '--show-current'], { cwd: project, encoding: 'utf8' });
   assert.equal(branch.status, 0, branch.stderr);
@@ -71,7 +76,8 @@ test('handoff is idempotent when installed files are unchanged', (t) => {
   assert.equal(output.agent_contract, 'already-present');
   assert.equal(output.git.action, 'already-initialized');
   const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
-  assert.equal((agents.match(/Harness v0\.4 operating handoff/g) ?? []).length, 1);
+  assert.equal((agents.match(/<!-- HARNESS:BEGIN -->/g) ?? []).length, 1);
+  assert.equal((agents.match(/<!-- HARNESS:END -->/g) ?? []).length, 1);
 });
 
 test('handoff refuses to overwrite a project-customised installed rule', (t) => {

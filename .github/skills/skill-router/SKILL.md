@@ -34,6 +34,8 @@ Extract responsibilities from the system model, for example:
 - packaging/deployment
 - Linux/Windows automation
 - CLI or scheduled execution
+- dependency/tool installation or environment inspection
+- harness lifecycle maintenance
 
 ### 2. Apply deterministic bindings
 
@@ -43,10 +45,13 @@ These bindings are routine decisions and require no user question when the evide
 |---|---|
 | WordPress runtime/plugin/theme | `wordpress-way.md` + `wordpress-plugin/SKILL.md` |
 | Scraping/crawling/parsing/ingestion | `scraping-pipeline/SKILL.md` |
+| CLI, automation, package/runtime/tool inspection or project-scoped installs/updates | `command-line/SKILL.md` |
 | Significant OOP/service architecture | `oop-standards.md` when classes/interfaces are actually justified |
 | Architecture selection or major boundary work | `architecture-canvas/SKILL.md` |
 | Complexity/dependency expansion | `complexity-brake/SKILL.md` |
 | Project resume/checkpoint/pivot | `project-memory/SKILL.md` |
+
+Harness lifecycle phrases such as `harness update`, `upgrade the harness`, `harness doctor`, `/doctor`, or equivalent instructions bind the command-line skill and the project-local lifecycle controller automatically.
 
 A capability can bind several skills. A skill is not a substitute for the confirmed system model.
 
@@ -54,7 +59,7 @@ A capability can bind several skills. A skill is not a substitute for the confir
 
 Load a skill only when a current responsibility or proof depends on it. Exclude unrelated skills explicitly to prevent context bloat and pattern mixing.
 
-Required skills are loaded automatically. Do **not** ask, "Should I activate the WordPress skill?" when the system is demonstrably WordPress.
+Required skills are loaded automatically. Do **not** ask, "Should I activate the WordPress skill?" when the system is demonstrably WordPress, or "Should I use the terminal?" when the accepted task is explicitly an install/update/automation operation.
 
 Conditional skills activate only when their trigger becomes true. For example, do not load database-design guidance merely because a plugin might someday need storage.
 
@@ -72,11 +77,11 @@ Use this precedence:
 4. `ENGINEERING-DEFAULTS.md`;
 5. generic preference.
 
-If a repository already establishes a language, formatter, framework, or test stack, preserve it unless there is evidence for a consequential change.
+If a repository already establishes a language, formatter, framework, package manager, or test stack, preserve it unless there is evidence for a consequential change.
 
 ### 6. Enforce the question budget
 
-Routine engineering question budget is zero. Before asking Shaun anything about skill selection, language, naming, OOP/procedural style, test organisation, or normal framework conventions, verify that the answer is not already determined by the evidence or defaults.
+Routine engineering question budget is zero. Before asking Shaun anything about skill selection, language, naming, OOP/procedural style, test organisation, package-manager choice, or normal framework conventions, verify that the answer is not already determined by the evidence or defaults.
 
 Ask only when the missing answer belongs to Shaun under `docs/DECISION-RIGHTS.md` or a material ambiguity survives repository inspection and bounded proof.
 
@@ -125,4 +130,4 @@ Promotion condition: ...
 
 ## Final rule
 
-**Compose skills from responsibilities. Automatically bind ecosystem rules when evidence is decisive. Project presets accelerate recognition; they do not replace evidence or force architecture.**
+**Compose skills from responsibilities. Automatically bind ecosystem and command-line rules when evidence is decisive. Project presets accelerate recognition; they do not replace evidence or force architecture.**

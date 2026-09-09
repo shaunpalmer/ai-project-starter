@@ -40,6 +40,32 @@ A question is justified only when the missing answer belongs to Shaun under the 
 
 Do not install a new system runtime merely because it appears in this table. Inspect what is available first. A material environment/runtime installation follows the Decision Rights Contract.
 
+## Command-line operating defaults
+
+The command line is a normal engineering interface, not a special escalation path.
+
+- Inspect OS, shell, PATH, runtimes, lockfiles, package manager, virtual environments, Git state, and existing tooling before changing the machine or project.
+- Use the project's existing package manager and lockfile. Do not switch ecosystems/package managers because of model preference.
+- Project-scoped dependency installation/update required by the accepted plan is routine when it does not introduce a consequential provider, runtime, licence, security boundary, or production mutation.
+- Prefer local/user-scoped tools over global/system mutation when either solves the problem.
+- `sudo`, root/system package installation, service/kernel/firewall changes, and machine-wide runtime replacement require explicit approval because they change the host beyond the project.
+- Do not pipe an unreviewed remote script directly into a shell.
+- Run commands non-interactively where practical, with explicit timeouts for commands that may wait indefinitely.
+- Reuse authorised Git/SSH/GitHub CLI/provider authentication already present on the machine. Never request, print, persist, or embed secrets merely to automate a command.
+- After an install/update, verify the resulting version, lockfile/config changes, tests, and Git status.
+
+Use `.github/skills/command-line/SKILL.md` when terminal operation, dependency installation, runtime/tool inspection, or environment updates are part of the work.
+
+Natural-language lifecycle requests are executable instructions. If Shaun says `harness update`, `upgrade the harness`, `update to the latest harness`, or `/harness update`, run the project-local lifecycle controller. If he says `harness doctor`, `/doctor`, or asks whether the harness is healthy/current, run the doctor command rather than guessing.
+
+Generated-project lifecycle commands:
+
+```bash
+node scripts/harness.mjs doctor
+node scripts/harness.mjs update --check
+node scripts/harness.mjs update --apply
+```
+
 ## Architecture defaults
 
 ### WordPress
@@ -140,7 +166,24 @@ Git is part of execution, not an optional afterthought.
 - Pushing an already-authorised non-default branch is routine.
 - Force push, default-branch push, merge, release, remote-repository creation/deletion, and destructive history edits remain explicit-owner actions.
 
-Use `scripts/vcs-control.js` for deterministic preflight, branch, checkpoint, remote verification, and push behaviour.
+Use `scripts/vcs-control.js` for deterministic preflight, branch, checkpoint, remote verification, and push behaviour in the starter; generated projects use `scripts/vcs-control.mjs` through `scripts/harness.mjs vcs ...`.
+
+## Harness lifecycle defaults
+
+An embedded/generated harness is managed software, not a one-time copy.
+
+- `HARNESS-MANIFEST.json` defines the files the harness owns and the current harness version.
+- Generated projects store the installed version, source commit, managed-file hashes, and local baseline snapshots under `.harness/`.
+- Updates use a three-way comparison: installed baseline vs project-local file vs latest upstream file.
+- Upstream-only changes replace automatically.
+- Project-only changes are preserved.
+- Non-overlapping upstream/local changes are merged automatically.
+- Real conflicts stop before replacement and become explicit repair work.
+- Newly managed files are added automatically.
+- Files removed from the upstream manifest are preserved locally and treated as deprecated rather than silently deleted.
+- Update checks are non-mutating.
+- Applying an update requires a clean Git worktree, creates an isolated `harness/update-<version>` branch, stages only lifecycle-owned files, verifies the diff, and creates a focused checkpoint.
+- Projects predating lifecycle metadata use `harness adopt` to reconstruct a trusted baseline before updating; if no trusted baseline can be established, the updater refuses replacement rather than guessing.
 
 ## Quality definition
 

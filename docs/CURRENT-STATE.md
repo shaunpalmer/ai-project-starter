@@ -1,42 +1,50 @@
 # Current State
 
 Last verified: 2026-09-09
-Working branch: `athena/engineering-defaults-v0.4`
-Pull request: #5 — `Harness v0.4: engineering defaults and deterministic VCS`
-Verification: GitHub Actions run #17 passed on Node 20, 22, and 24 with `npm test`, `npm run control:verify`, and `npm run memory:resume` green across the matrix.
+Working branch: `athena/harness-lifecycle-v0.5`
+Pull request: #6 — `Harness v0.5: lifecycle updater and CLI operator`
+Verification: GitHub Actions run #37 passed on Node 20, 22, and 24 with `npm test`, `npm run control:verify`, and `npm run memory:resume` green across the matrix.
 
 ## Current truth
 
-Harness v0.3 is merged to `main`. Harness v0.4 is implemented and verified on PR #5.
+Harness v0.3 is merged to `main`. Harness v0.4 remains implemented and verified on PR #5. Harness v0.5 is stacked on the v0.4 branch in PR #6 so its lifecycle/CLI diff stays isolated until Shaun decides on the merge order.
 
-`ENGINEERING-DEFAULTS.md` defines the routine engineering operating policy: rule precedence, zero routine-question budget, language/runtime defaults, architecture defaults, dependency/persistence/failure/testing rules, and version-control expectations.
+v0.5 adds a managed harness lifecycle rather than treating generated-project harness files as one-time copies. `HARNESS-MANIFEST.json` declares the managed surface. Generated projects retain exact upstream baselines under `.harness/baseline/` and schema-v2 lifecycle metadata in `.harness/handoff.json`.
 
-The WordPress Way has been consolidated into one authoritative non-duplicated rule set. The skill router automatically binds mature ecosystem guidance from confirmed capabilities instead of asking Shaun to activate obvious skills.
+`scripts/harness-update.js` provides deterministic doctor, adopt, non-mutating update check, and three-way apply behaviour. It compares installed baseline vs project-local file vs incoming harness file, automatically handles safe upstream-only/local-only/non-overlapping changes, preserves removed-upstream files as deprecated, and blocks real conflicts before replacement.
 
-`scripts/vcs-control.js` provides non-interactive Git status/preflight/init/branch/checkpoint/connect/push controls. It uses existing machine authentication, stages only explicitly declared files, refuses managed writes on protected default branches, rejects credential-bearing HTTPS remotes, and fails explicitly rather than waiting for hidden terminal prompts.
+`scripts/harness.js` provides the human/model lifecycle entrypoint. Generated projects receive `scripts/harness.mjs` and `scripts/harness-update.mjs`. Natural-language instructions such as `harness update`, `upgrade this project to the latest harness`, `harness doctor`, or `/doctor` are defined as executable lifecycle work rather than questions for Shaun.
 
-`scripts/project-handoff.js` installs the proven v0.4 operating layer into a separately generated product project. It copies engineering defaults and required specialist skills, provides `scripts/vcs-control.mjs`, appends the v0.4 rules to the generated `AGENTS.md`, records `.harness/handoff.json`, and initialises local Git on `work/bootstrap` if the project is not already under version control. Existing project-customised handoff files are never silently overwritten.
+The update workflow now explicitly distinguishes two cases:
+
+1. The reusable `ai-project-starter` source clone itself is updated with Git (`git status`, safe branch handling, `git switch main`, `git pull --ff-only origin main`, verification).
+2. The embedded harness inside a product project is updated through doctor/check/apply and never by gutting or replacing the project directory.
+
+Older projects that do not yet contain `scripts/harness.mjs` are bootstrapped from a freshly updated v0.5+ starter clone with `npm run harness -- <command> --cwd /absolute/project`. If lifecycle metadata already exists, adoption is skipped. If doctor reports `legacy-unmanaged`, `adopt` reconstructs a trusted historical baseline first, then update check/apply installs the current managed controllers.
+
+The command line is an explicit routine engineering capability. The command-line skill covers evidence-based OS/shell/runtime/package-manager discovery, project-scoped installs/updates, non-interactive execution, verification, and secret-safe operation. Machine-wide/root-level changes remain consequential.
 
 ## Working capabilities
 
 - Natural-language infer-before-implement discovery and eight readiness gates from v0.3.
-- Routine engineering question budget of zero.
-- WordPress -> PHP/The WordPress Way default behaviour.
-- Scraping/ingestion -> Python default unless stronger evidence overrides it.
-- General automation/runtime defaults with ecosystem precedence.
-- Automatic skill binding from confirmed responsibilities.
-- Deterministic local Git preflight, init, safe work-branch creation, focused checkpoint commits, remote verification, and authorised non-default-branch push policy.
-- Generated product projects receive the proven engineering/VCS operating handoff without being created inside the reusable starter.
-- Quality benchmark defined for WordPress, scraping/ingestion, and automation families.
+- Engineering defaults, zero routine-question budget, deterministic skill binding, consolidated WordPress Way, deterministic VCS, generated-project handoff, and quality benchmark from v0.4.
+- Managed embedded-harness lifecycle with exact baselines and three-way updates.
+- `harness doctor`, `update --check`, `update --apply`, and `adopt`.
+- Safe first upgrade of older projects from the updated starter clone without moving/deleting product code.
+- Explicit source-repository-vs-embedded-project lifecycle routing in README, lifecycle docs, agent contract, and CLI usage.
+- Deterministic command-line skill and package-manager/runtime discovery.
+- Lifecycle update branches and focused checkpoints.
+- Regression proof including safe three-way merge, conflict refusal, legacy adoption, handoff idempotency/customisation protection, VCS safety, and CLI capability checks.
 
 ## Known boundaries
 
+- PR #5 (v0.4) and PR #6 (v0.5) remain unmerged until Shaun explicitly approves merge.
+- PR #6 currently targets the v0.4 branch. After PR #5 is merged, retarget PR #6 to `main`, rerun CI, then present the final merge decision.
 - Remote GitHub repository creation/deletion is not automatic.
-- Force push, default-branch managed push, destructive history edits, merge, deployment, production mutation, provider spend, and release remain Shaun-owned.
-- `destination --create` and `handoff` are currently two explicit controller steps rather than one combined command; the harness can run both without asking Shaun routine engineering questions.
-- The benchmark contract is defined, but the three real-world golden benchmark briefs have not yet been executed against a merged v0.4 release.
-- Legacy experimental helpers remain unsupported; the old interactive `git-checkpoint.js` is not part of the v0.4 execution path.
+- Force push, default-branch managed push, destructive history edits, merge, deployment, production mutation, provider spend, machine-wide/root package/runtime/service/kernel/firewall mutation, and release remain Shaun-owned.
+- Legacy adoption only proceeds when the previous harness baseline can be established from trustworthy source history; otherwise it refuses to guess.
+- Real three-way conflicts require explicit reconciliation before apply.
 
 ## Next action
 
-PR #5 is ready for Shaun's review and merge decision. After merge, run three fixed acceptance briefs — WordPress plugin, scraping/ingestion pipeline, and automation tool — and score question count, architecture fit, completeness, verification, manual corrections, and Git recoverability against `docs/QUALITY-BENCHMARK.md`.
+Shaun reviews/decides PR #5 first. If PR #5 is merged, retarget PR #6 to `main`, verify the rebased/retargeted lifecycle branch, then present PR #6 for Shaun's merge decision. After v0.5 is merged, use the documented first-upgrade workflow on one real older harness-bearing project as the acceptance test before upgrading other projects.
