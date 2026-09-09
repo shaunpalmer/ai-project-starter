@@ -2,9 +2,35 @@
 
 The harness is managed software embedded into generated projects. It must be upgradeable without treating the project as disposable or blindly replacing project-local work.
 
+## First distinction: source repository vs embedded harness
+
+There are two separate update jobs.
+
+### Updating the reusable `ai-project-starter` source repository
+
+The starter/source clone is ordinary Git source and is updated with Git, for example:
+
+```bash
+cd /path/to/ai-project-starter
+git status
+git switch main
+git pull --ff-only origin main
+npm test
+```
+
+If the worktree is not clean, checkpoint or move the local work to a safe branch first. Do not force-reset or delete local work just to obtain the latest starter.
+
+The embedded-project lifecycle updater is **not** the mechanism for updating the starter repository itself.
+
+### Updating the embedded harness inside a product project
+
+The product project stays in place. Do not gut it, move product code out, or replace the project directory.
+
+The updater modifies only manifest-declared harness-managed files. Project-owned source, planning, decisions, state and unrelated local work are outside the managed replacement surface.
+
 ## User/model commands
 
-From a generated project:
+From a generated project that already has the lifecycle controller:
 
 ```bash
 node scripts/harness.mjs doctor
@@ -13,7 +39,43 @@ node scripts/harness.mjs update --apply
 node scripts/harness.mjs adopt
 ```
 
-Natural-language equivalents such as `harness update`, `upgrade the harness`, `update to the latest harness`, `harness doctor`, or `/doctor` are executable lifecycle instructions. The agent should run the local controller rather than ask Shaun how to copy files.
+Natural-language equivalents such as `harness update`, `upgrade the harness`, `update to the latest harness`, `harness doctor`, or `/doctor` are executable lifecycle instructions. The agent should run the correct controller rather than ask Shaun how to copy files.
+
+If the current workspace is the reusable starter/source repository and Shaun asks to update **that source**, the agent should use the safe Git-source workflow instead of treating the starter as an embedded project.
+
+## Bootstrapping an older project
+
+An older project may not yet contain `scripts/harness.mjs`. Use a freshly updated v0.5+ starter clone as the bootstrap controller and target the project with `--cwd`:
+
+```bash
+cd /path/to/ai-project-starter
+npm run harness -- doctor --cwd /absolute/path/to/existing-project
+```
+
+Then follow the diagnosed state.
+
+### Existing lifecycle metadata is present
+
+If `.harness/handoff.json` exists, skip adoption and run:
+
+```bash
+npm run harness -- update --check --cwd /absolute/path/to/existing-project
+npm run harness -- update --apply --cwd /absolute/path/to/existing-project
+```
+
+Legacy schema-v1 handoff metadata is understood and can be reconstructed into the current baseline model during update planning.
+
+### No lifecycle metadata is present
+
+If doctor reports `legacy-unmanaged`, establish a trusted baseline before updating:
+
+```bash
+npm run harness -- adopt --cwd /absolute/path/to/existing-project
+npm run harness -- update --check --cwd /absolute/path/to/existing-project
+npm run harness -- update --apply --cwd /absolute/path/to/existing-project
+```
+
+After a successful v0.5+ update the project receives the local lifecycle controllers, so future updates can be run directly from the project with `node scripts/harness.mjs ...`.
 
 ## Ownership model
 
@@ -62,7 +124,7 @@ No updater operation force-pushes, pushes the default branch, merges, deploys, r
 
 ## Existing/legacy projects
 
-Projects created before lifecycle metadata may run `harness adopt`.
+Projects created before lifecycle metadata may run `harness adopt` through the freshly updated starter controller.
 
 Adoption:
 
