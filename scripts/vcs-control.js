@@ -38,7 +38,16 @@ function run(command, args, cwd = process.cwd(), options = {}) {
     env: NON_INTERACTIVE_ENV,
     timeout: options.timeout ?? 15000,
   });
-  if (result.error) throw new Error(`${command} failed: ${result.error.message}`);
+  if (result.error) {
+    if (options.allowFailure) {
+      return {
+        status: result.error.code === 'ENOENT' ? 127 : 1,
+        stdout: '',
+        stderr: result.error.message,
+      };
+    }
+    throw new Error(`${command} failed: ${result.error.message}`);
+  }
   if (result.status !== 0 && !options.allowFailure) {
     const detail = (result.stderr || result.stdout || `exit ${result.status}`).trim();
     throw new Error(`${command} ${args.join(' ')} failed: ${detail}`);
