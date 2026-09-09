@@ -32,7 +32,7 @@ function createGeneratedProject(t, type = 'infer') {
   return JSON.parse(result.stdout).project_destination;
 }
 
-test('handoff copies engineering defaults, required skills, and VCS controller into a generated project', (t) => {
+test('handoff copies engineering defaults, required skills, VCS control, and binds the generated agent contract', (t) => {
   const project = createGeneratedProject(t);
   const result = runScript('project-handoff.js', ['--project-root', project]);
   assert.equal(result.status, 0, result.stderr);
@@ -51,6 +51,8 @@ test('handoff copies engineering defaults, required skills, and VCS controller i
   }
 
   assert.ok(output.copied.includes('ENGINEERING-DEFAULTS.md'));
+  assert.equal(output.agent_contract, 'appended');
+  assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Harness v0\.4 operating handoff/);
   assert.equal(output.git.branch, 'work/bootstrap');
   const branch = spawnSync('git', ['branch', '--show-current'], { cwd: project, encoding: 'utf8' });
   assert.equal(branch.status, 0, branch.stderr);
@@ -66,7 +68,10 @@ test('handoff is idempotent when installed files are unchanged', (t) => {
   const output = JSON.parse(second.stdout);
   assert.equal(output.copied.length, 0);
   assert.ok(output.unchanged.includes('ENGINEERING-DEFAULTS.md'));
+  assert.equal(output.agent_contract, 'already-present');
   assert.equal(output.git.action, 'already-initialized');
+  const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
+  assert.equal((agents.match(/Harness v0\.4 operating handoff/g) ?? []).length, 1);
 });
 
 test('handoff refuses to overwrite a project-customised installed rule', (t) => {
