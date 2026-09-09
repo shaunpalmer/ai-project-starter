@@ -1,48 +1,48 @@
 {
   "schema_version": 2,
-  "id": "engineering-defaults-vcs-v0.4",
-  "goal": "Pre-decide routine engineering choices, bind ecosystem rules automatically, make version control deterministic, and hand those controls into generated product projects.",
+  "id": "harness-lifecycle-v0.5",
+  "goal": "Make embedded harnesses safely self-update with three-way reconciliation and make routine command-line operation a first-class harness capability.",
   "status": "completed",
   "alignment": [
     {
       "gate": "destination",
       "answer": "YES",
-      "evidence": "Work is isolated on athena/engineering-defaults-v0.4 and targets only the reusable harness and its generated-project handoff contract."
+      "evidence": "v0.5 work is isolated on athena/harness-lifecycle-v0.5 and PR #6 is stacked on the unmerged v0.4 PR #5 so lifecycle changes remain independently reviewable."
     },
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "v0.3 contracts, WordPress Way, skill router, decision rights, old git-checkpoint.js, package scripts, generated scaffold, tests, and external harness references were inspected."
+      "evidence": "The v0.4 handoff contract, generated-project state, VCS controller, skill router, engineering defaults, Git merge primitives, package history, and regression failures from PR #6 were inspected and used to drive the implementation."
     },
     {
       "gate": "system_model",
       "answer": "YES",
-      "evidence": "00-PLANNING/SYSTEM-MODEL.md confirms the low-question engineering-default, deterministic-VCS, and generated-project handoff model."
+      "evidence": "00-PLANNING/SYSTEM-MODEL.md confirms managed lifecycle inputs/outputs, baseline state, three-way update flow, CLI capability, failure boundaries, invariants, and evidence."
     },
     {
       "gate": "boundaries",
       "answer": "YES",
-      "evidence": "v0.4 does not create/delete remote repositories, force push, push managed work to main/master, merge, deploy, release, spend credits, or mutate production."
+      "evidence": "Lifecycle operations do not force push, push managed work to main/master, merge, deploy, release, mutate production, spend provider credits, store credentials, or perform sudo/root/system package changes."
     },
     {
       "gate": "ownership",
       "answer": "YES",
-      "evidence": "ENGINEERING-DEFAULTS.md owns routine defaults; ecosystem skills own platform rules; vcs-control.js owns Git operations; project-handoff.js copies proven controls into generated projects; project-control remains readiness/memory control."
+      "evidence": "HARNESS-MANIFEST.json owns the managed surface; .harness/baseline and handoff.json own installed lifecycle state; harness-update.js owns doctor/adopt/update; vcs-control.js owns ordinary Git actions; product planning/state/source remains project-owned."
     },
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "The slice implements engineering defaults, deterministic skill binding, one consolidated WordPress contract, VCS control, safe generated-project handoff, and focused regression proof without a new orchestration framework."
+      "evidence": "The slice adds only the manifest, baseline/handoff lifecycle state, doctor/update/adopt controller, command-line skill/routing, generated-project handoff changes, documentation/ADR, and focused regressions needed for safe upgrades."
     },
     {
       "gate": "debt_control",
       "answer": "YES",
-      "evidence": "The design reuses Node 20+ and existing controllers, adds no runtime dependency, refuses to overwrite project-customised handoff files, and marks the legacy interactive git helper unsupported."
+      "evidence": "The updater remains zero npm runtime dependency on Node 20+ and Git, uses Git's native three-way merge, refuses unknown baselines and real conflicts, preserves removed/project-only files, and avoids a second orchestration framework."
     },
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "PR #5 GitHub Actions run #14 passed on Node 20, 22, and 24. Each job passed npm test (including VCS and generated-project handoff regressions), npm run control:verify, and npm run memory:resume."
+      "evidence": "PR #6 Actions run #25 passed on Node 20, 22, and 24 after lifecycle updater, CLI discovery, legacy adoption, conflict handling, and generated handoff regressions were repaired; every job passed npm test, npm run control:verify, and npm run memory:resume. Final documentation/state reconciliation remains covered by the same PR CI gate."
     }
   ]
 }
