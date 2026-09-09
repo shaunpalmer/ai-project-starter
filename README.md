@@ -12,6 +12,106 @@ The quality target is **maximum correct pre-decisions with minimum human interru
 
 Known WordPress work can classify quickly. Hybrid work such as scraping + browser automation + API integration + persistent state is allowed to remain hybrid; `PROJECT-TYPES.md` provides presets rather than mandatory boxes.
 
+## Two different things can be updated
+
+Do not mix up the reusable **starter/source repository** with the **embedded harness installed inside a product project**.
+
+### 1. Updating the starter/source repository itself
+
+The `ai-project-starter` clone is ordinary Git source. Update that clone with Git; do **not** run the embedded-project updater against the starter repository itself.
+
+Typical safe workflow:
+
+```bash
+cd /path/to/ai-project-starter
+git status
+git switch main
+git pull --ff-only origin main
+npm test
+```
+
+If `git status` is not clean, checkpoint or move the local work to a safe branch first. Do not delete local work, force-reset the repository, or blindly overwrite files just to get the latest harness.
+
+This Git pull is the first step when the local starter clone is behind GitHub.
+
+### 2. Updating the harness inside an existing product project
+
+Do **not** gut the project, move the product code out, or replace the whole project directory.
+
+The project stays where it is. The lifecycle updater changes only the harness-managed surface and preserves project-owned code, planning, decisions, state, and local customisations.
+
+For projects already carrying the v0.5 lifecycle controller, run from the project root:
+
+```bash
+node scripts/harness.mjs doctor
+node scripts/harness.mjs update --check
+node scripts/harness.mjs update --apply
+```
+
+The intended human/model workflow is therefore:
+
+```text
+update starter clone from GitHub
+        ↓
+open existing product project
+        ↓
+doctor
+        ↓
+check update plan
+        ↓
+apply if conflict-free
+        ↓
+continue normal project work
+```
+
+## First upgrade of an older project
+
+An older project may not yet contain `scripts/harness.mjs`. That is expected; it cannot use a controller it has never received.
+
+Use the freshly updated v0.5+ starter repository as the bootstrap controller and target the old project with `--cwd`:
+
+```bash
+cd /path/to/ai-project-starter
+npm run harness -- doctor --cwd /absolute/path/to/existing-project
+```
+
+Then follow the doctor's result.
+
+### Older project already has lifecycle/handoff metadata
+
+If `.harness/handoff.json` exists, do not adopt again. Run:
+
+```bash
+npm run harness -- update --check --cwd /absolute/path/to/existing-project
+npm run harness -- update --apply --cwd /absolute/path/to/existing-project
+```
+
+The update installs the current lifecycle controllers into the project as part of the managed update. Future upgrades can then be run locally with `node scripts/harness.mjs ...`.
+
+### Older project has no lifecycle/handoff metadata
+
+If doctor reports `legacy-unmanaged`, establish a trusted historical baseline first:
+
+```bash
+npm run harness -- adopt --cwd /absolute/path/to/existing-project
+npm run harness -- update --check --cwd /absolute/path/to/existing-project
+npm run harness -- update --apply --cwd /absolute/path/to/existing-project
+```
+
+`adopt` does not replace the project. It reconstructs the prior harness baseline from Git history so the updater can safely tell old harness content from project-local changes. If it cannot prove that baseline, it refuses to guess.
+
+## Natural-language lifecycle requests
+
+The model should understand requests such as:
+
+- `harness doctor`
+- `/doctor`
+- `harness update`
+- `upgrade this project to the latest harness`
+- `check whether the harness is out of date`
+
+Inside a generated project, those requests route to the local lifecycle controller. Inside the reusable starter/source repository, an instruction to update **the starter itself** means update the Git clone safely first, not treat the starter as an embedded project.
+
 ## Engineering defaults
 
 `ENGINEERING-DEFAULTS.md` is the baseline engineering operating policy. Rule precedence is:
@@ -48,16 +148,17 @@ Ready/in-progress/completed work requires:
 
 No npm runtime dependencies are required for the supported harness controls.
 
-## Start a session
+## Start a starter-repository session
 
 ```bash
 npm run memory:resume
 npm run status
 npm run vcs:status
-npm run doctor
 ```
 
 Then read `AGENTS.md` and the files named by the active task.
+
+For a generated product project with lifecycle v0.5+, use `node scripts/harness.mjs doctor` when lifecycle health is relevant.
 
 ## Core commands
 
@@ -72,16 +173,25 @@ Then read `AGENTS.md` and the files named by the active task.
 | `npm run decision -- --kind routine` | Resolve who owns a decision category |
 | `npm run destination -- --slug example --workspace-root /absolute/path` | Preview/create a bounded product workspace |
 | `npm run handoff -- --project-root /absolute/path` | Install the managed engineering/skills/VCS/lifecycle layer into a generated project |
-| `npm run doctor` | Diagnose local lifecycle, Git and common CLI capability without mutation |
-| `npm run update -- --check` | Compare installed harness against the latest source without changing the project |
-| `npm run update -- --apply` | Apply a conflict-free managed update on an isolated lifecycle branch |
-| `npm run adopt` | Establish a trusted lifecycle baseline for a recognisable legacy harness |
+| `npm run harness -- doctor --cwd /project` | Diagnose an existing generated/legacy project from the starter repository |
+| `npm run harness -- update --check --cwd /project` | Preview a generated-project harness update without mutation |
+| `npm run harness -- update --apply --cwd /project` | Apply a conflict-free generated-project harness update |
+| `npm run harness -- adopt --cwd /project` | Establish a trusted lifecycle baseline for a recognisable legacy project |
 | `npm run vcs:preflight` | Validate local Git identity/repository state without interactive prompts |
 | `npm run vcs -- branch --name work/example` | Create/switch to a safe non-default work branch |
 | `npm run vcs -- checkpoint --message "..." --file path` | Commit only explicitly named verified files |
 | `npm run vcs -- connect --url <git-url>` | Attach and verify an explicitly supplied remote using existing machine authentication |
 | `npm run vcs -- push` | Push an already-authorised non-default branch |
 | `npm test` | Run automated behaviour tests |
+
+Inside a v0.5+ generated project, the equivalent lifecycle commands are:
+
+```bash
+node scripts/harness.mjs doctor
+node scripts/harness.mjs update --check
+node scripts/harness.mjs update --apply
+node scripts/harness.mjs adopt
+```
 
 ## Create and hand off a project
 
@@ -118,20 +228,9 @@ The handoff copies the manifest-declared engineering defaults, specialist skills
 
 For WordPress, authored source remains bounded under `src/<plugin-slug>/`; other types use `src/` until the accepted architecture refines ownership.
 
-## Harness lifecycle and self-update
+## Harness lifecycle and three-way self-update
 
 An embedded harness is managed software, not a one-time folder copy.
-
-From a generated project the model/user can run:
-
-```bash
-node scripts/harness.mjs doctor
-node scripts/harness.mjs update --check
-node scripts/harness.mjs update --apply
-node scripts/harness.mjs adopt
-```
-
-Natural-language requests such as **"harness update"**, **"upgrade to the latest harness"**, **"harness doctor"**, or **`/doctor`** are treated as executable lifecycle instructions. The agent should run the local controller rather than ask Shaun how to copy/merge files.
 
 `HARNESS-MANIFEST.json` declares the managed surface. Generated projects store the exact previous upstream content under `.harness/baseline/`. Updates compare:
 
