@@ -15,7 +15,7 @@ function temporaryDirectory(t) {
   return directory;
 }
 
-function run(args, cwd) {
+function run(args, cwd, envOverrides = {}) {
   return spawnSync(process.execPath, [SCRIPT, ...args], {
     cwd,
     encoding: 'utf8',
@@ -24,6 +24,7 @@ function run(args, cwd) {
       GIT_TERMINAL_PROMPT: '0',
       GH_PROMPT_DISABLED: '1',
       GCM_INTERACTIVE: 'Never',
+      ...envOverrides,
     },
   });
 }
@@ -39,6 +40,20 @@ function configureIdentity(cwd) {
   git(['config', 'user.email', 'harness@example.test'], cwd);
 }
 
+function commandPath(command) {
+  for (const directory of (process.env.PATH || '').split(path.delimiter)) {
+    if (!directory) continue;
+    const candidate = path.join(directory, command);
+    try {
+      fs.accessSync(candidate, fs.constants.X_OK);
+      return candidate;
+    } catch {
+      // Keep searching PATH.
+    }
+  }
+  return null;
+}
+
 test('vcs init creates a non-protected work branch without prompting', (t) => {
   const cwd = temporaryDirectory(t);
   const result = run(['init'], cwd);
@@ -47,6 +62,26 @@ test('vcs init creates a non-protected work branch without prompting', (t) => {
   assert.equal(output.action, 'initialized');
   assert.equal(output.branch, 'work/bootstrap');
   assert.equal(git(['branch', '--show-current'], cwd), 'work/bootstrap');
+});
+
+test('vcs init treats missing GitHub CLI as optional', (t) => {
+  if (process.platform === 'win32') {
+    t.skip('PATH-isolation fixture is POSIX-specific.');
+    return;
+  }
+
+  const cwd = temporaryDirectory(t);
+  const bin = path.join(cwd, 'bin');
+  fs.mkdirSync(bin);
+  const gitBinary = commandPath('git');
+  assert.ok(gitBinary, 'git must be available for the VCS test suite');
+  fs.symlinkSync(gitBinary, path.join(bin, 'git'));
+
+  const result = run(['init'], cwd, { PATH: bin });
+  assert.equal(result.status, 0, result.stderr);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.action, 'initialized');
+  assert.deepEqual(output.github_cli, { installed: false, authenticated: null });
 });
 
 test('vcs preflight reports missing identity and required remote as explicit failures', (t) => {
