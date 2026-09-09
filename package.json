@@ -16,6 +16,7 @@
     "decision": "node scripts/project-control.js decision",
     "destination": "node scripts/project-control.js destination",
     "handoff": "node scripts/project-handoff.js",
+    "migrate": "node scripts/project-migrate.js",
     "harness": "node scripts/harness.js",
     "doctor": "node scripts/harness.js doctor",
     "update": "node scripts/harness.js update",
