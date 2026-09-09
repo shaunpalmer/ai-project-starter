@@ -4,62 +4,79 @@ MODEL_STATUS: CONFIRMED
 
 ## Goal
 
-Make the reusable harness capable of receiving a natural-language software goal and reliably modelling unfamiliar or hybrid systems before it commits to architecture or implementation.
+Make the harness behave like an engineering operating system: infer routine technical defaults, bind mature ecosystem rules automatically, keep meaningful work under recoverable version control, and minimise questions to Shaun without sacrificing architecture quality.
 
 ## Inputs
 
-- Shaun's natural-language project intent.
-- Existing repository contracts, project presets, skills, tests, and Git history.
-- Evidence gathered from the target project and bounded technical proofs.
+- Shaun's natural-language project brief and feature list.
+- Confirmed system-model evidence from the target project.
+- Existing repository/runtime conventions and accepted ADRs.
+- `ENGINEERING-DEFAULTS.md`.
+- Ecosystem skills such as The WordPress Way and scraping-pipeline guidance.
+- Local Git state and existing machine Git/GitHub authentication.
 
 ## Outputs
 
-- A confirmed system model.
-- A primary project shape plus capability composition and confidence.
-- An architecture hypothesis with alternatives, proof, and approval evidence.
-- A machine-checkable readiness state before execution.
+- Routine engineering choices resolved without user interruption.
+- Deterministic skill binding for evidenced capabilities.
+- Ecosystem-correct implementation defaults for WordPress, scraping, and automation work.
+- Non-interactive Git preflight, safe work branches, focused checkpoints, remote verification, and authorised feature-branch pushes.
+- A measurable quality target based on low question count, complete implementation, proof, and recoverability.
 
 ## Capabilities
 
-- Project discovery and evidence ingestion.
-- Hybrid capability classification.
-- Known-project preset reuse.
-- Bounded proof for material uncertainty.
-- Persistent decision and task state.
-- Generated-project handoff.
-- Structural verification and CI proof.
+- Engineering-default resolution with explicit precedence.
+- Zero-question handling of routine implementation choices.
+- WordPress-specific rule binding.
+- Scraping/automation runtime defaults.
+- Version-control preflight and repository initialisation.
+- Safe branch management.
+- Focused file staging and checkpoint commits.
+- Existing-credential remote verification.
+- Non-default branch push policy.
+- Regression proof across supported Node versions.
 
 ## Data flow
 
-Natural-language intent → evidence gathering → system model → project shape/capability composition → architecture hypothesis → consequential approval → smallest useful slice → execution → verification → checkpoint.
+Natural-language intent -> confirmed system model -> engineering defaults + required skills -> architecture hypothesis -> safe Git work branch -> implementation slice -> verification -> focused checkpoint -> optional authorised feature-branch push -> next slice / owner merge decision.
 
 ## State and persistence
 
-Stable purpose lives in `docs/NORTH-STAR.md`; current truth in `docs/CURRENT-STATE.md`; the system model and architecture hypothesis live in `00-PLANNING/`; accepted reasons live in ADRs; active readiness lives in `.harness/state/active-task.json`; Git preserves exact history.
+- Stable purpose: `docs/NORTH-STAR.md`.
+- Current truth: `docs/CURRENT-STATE.md`.
+- Problem/domain model: `00-PLANNING/SYSTEM-MODEL.md`.
+- Proposed route: `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`.
+- Routine engineering policy: `ENGINEERING-DEFAULTS.md`.
+- Decision authority: `docs/DECISION-RIGHTS.md`.
+- Active readiness: `.harness/state/active-task.json`.
+- Exact implementation history: Git.
 
 ## Failure boundaries
 
-- Low classification confidence must not silently choose architecture.
-- A project-type preset must not force database/framework/pattern choices unsupported by evidence.
-- Missing system-model or architecture-hypothesis status blocks ready/in-progress/completed verification.
-- Generated projects must remain blocked until local readiness checks pass.
-- CI failure keeps the change unproven and unmerged.
+- A routine engineering choice must not be bounced back to Shaun when evidence/defaults already decide it.
+- Defaults must not override stronger repository configuration or accepted ADRs.
+- Skill binding must not be driven only by a project-type label.
+- Version-control commands must not prompt interactively, expose credentials, stage the whole worktree, force push, or push managed work directly to `main`/`master`.
+- Missing Git identity or required remote/authentication must fail explicitly rather than freeze the loop.
+- Creating/deleting a remote repository, merging, releasing, deploying, and destructive history edits remain owner-controlled.
 
 ## Invariants
 
-- Shaun retains consequential architecture, provider, financial, security, merge, deployment, and release decisions.
-- Athena retains routine and reversible implementation decisions.
-- The harness remains planning-first and source/destination boundaries remain unchanged.
-- No new runtime dependency is required for the harness controller.
+- Shaun keeps consequential product/architecture deviations, provider/cost/security boundaries, destructive operations, merge, deployment, and release authority.
+- Athena decides routine/reversible implementation and established-default choices.
+- WordPress work follows mature WordPress conventions by default.
+- New scraping/ingestion work defaults to Python unless evidence establishes another stack.
+- The harness controller remains zero-runtime-dependency Node 20+.
+- Existing infer-before-implement discovery and eight readiness gates remain intact.
 
 ## Unknowns
 
-No blocking domain unknown remains for this slice. The material uncertainty is whether the implementation passes the existing and new regression suite on supported Node versions; that is resolved by PR CI.
+No product-policy unknown blocks this slice. Implementation quality is bounded by regression tests and GitHub Actions. A later acceptance benchmark should run the same harness against representative WordPress, scraping, and automation briefs and score question count, completeness, architecture fit, and manual corrections.
 
 ## Evidence
 
-- `AGENTS.md` already delegates bounded proofs and routine decisions to Athena.
-- `PROJECT-TYPES.md` previously forced one type to route pattern, storage, structure, and skills.
-- `HARNESS-LOOP.md` discovery previously focused on repository audit rather than explicit domain/system modelling.
-- `docs/HARNESS-REVIEW.md` identifies legacy controls as unsupported and recommends reconciling interfaces rather than adding another orchestration layer.
-- The supported controller is `scripts/project-control.js` with regression coverage and GitHub Actions checks.
+- Shaun's successful WordPress run demonstrated the desired experience: a large brief, very few questions, and rapid complete implementation.
+- Existing `.github/skills/wordpress-way.md` already contained strong WordPress defaults but duplicated its rule set internally.
+- Existing `scripts/git-checkpoint.js` uses interactive `readline`, broad `git add .`, timestamp commits, and unconditional push, making it unsuitable for a deterministic agent loop.
+- `docs/DECISION-RIGHTS.md` already delegates focused commits/checkpoints to Athena but previously treated every language choice as consequential, conflicting with mature ecosystem defaults.
+- v0.3 established system modelling before architecture, capability composition, local readiness proof, and CI regression gates.

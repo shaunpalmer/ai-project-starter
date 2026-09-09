@@ -1,16 +1,48 @@
 {
   "schema_version": 2,
-  "id": "infer-before-implement",
-  "goal": "Make unfamiliar and hybrid projects model the system before architecture or implementation is locked in.",
+  "id": "engineering-defaults-vcs-v0.4",
+  "goal": "Pre-decide routine engineering choices, bind ecosystem rules automatically, make version control deterministic, and hand those controls into generated product projects.",
   "status": "completed",
   "alignment": [
-    { "gate": "destination", "answer": "YES", "evidence": "Work is isolated on athena/infer-before-implement and targets only the reusable harness." },
-    { "gate": "evidence", "answer": "YES", "evidence": "AGENTS, project types/intake, supported controller, generated scaffold, skills, tests, CI workflow, and the 2026-09-05 harness review were inspected." },
-    { "gate": "system_model", "answer": "YES", "evidence": "00-PLANNING/SYSTEM-MODEL.md records the intent-to-system-model failure mode, state, boundaries, invariants, and proof target." },
-    { "gate": "boundaries", "answer": "YES", "evidence": "This slice strengthens discovery/readiness and generated-project handoff; it does not merge, deploy, release, spend credits, or mutate product projects." },
-    { "gate": "ownership", "answer": "YES", "evidence": "scripts/project-control.js remains the supported control plane; planning artifacts own discovery; generated projects receive a local readiness helper." },
-    { "gate": "minimum_slice", "answer": "YES", "evidence": "One schema/gate extension, two planning artifacts, preset-to-capability routing, generated-project verification, and focused regression proof address the observed failure without a new framework." },
-    { "gate": "debt_control", "answer": "YES", "evidence": "The supported unlock no longer depends on the broken legacy planning checker; exact status-line validation closes the false-positive loophole found by CI; legacy experiments remain explicitly unsupported." },
-    { "gate": "proof", "answer": "YES", "evidence": "PR #4 Actions run #4 passed on Node 20, 22, and 24. Each matrix job passed npm test (21 tests), npm run control:verify, and npm run memory:resume after the status-line repair." }
+    {
+      "gate": "destination",
+      "answer": "YES",
+      "evidence": "Work is isolated on athena/engineering-defaults-v0.4 and targets only the reusable harness and its generated-project handoff contract."
+    },
+    {
+      "gate": "evidence",
+      "answer": "YES",
+      "evidence": "v0.3 contracts, WordPress Way, skill router, decision rights, old git-checkpoint.js, package scripts, generated scaffold, tests, and external harness references were inspected."
+    },
+    {
+      "gate": "system_model",
+      "answer": "YES",
+      "evidence": "00-PLANNING/SYSTEM-MODEL.md confirms the low-question engineering-default, deterministic-VCS, and generated-project handoff model."
+    },
+    {
+      "gate": "boundaries",
+      "answer": "YES",
+      "evidence": "v0.4 does not create/delete remote repositories, force push, push managed work to main/master, merge, deploy, release, spend credits, or mutate production."
+    },
+    {
+      "gate": "ownership",
+      "answer": "YES",
+      "evidence": "ENGINEERING-DEFAULTS.md owns routine defaults; ecosystem skills own platform rules; vcs-control.js owns Git operations; project-handoff.js copies proven controls into generated projects; project-control remains readiness/memory control."
+    },
+    {
+      "gate": "minimum_slice",
+      "answer": "YES",
+      "evidence": "The slice implements engineering defaults, deterministic skill binding, one consolidated WordPress contract, VCS control, safe generated-project handoff, and focused regression proof without a new orchestration framework."
+    },
+    {
+      "gate": "debt_control",
+      "answer": "YES",
+      "evidence": "The design reuses Node 20+ and existing controllers, adds no runtime dependency, refuses to overwrite project-customised handoff files, and marks the legacy interactive git helper unsupported."
+    },
+    {
+      "gate": "proof",
+      "answer": "YES",
+      "evidence": "PR #5 GitHub Actions run #14 passed on Node 20, 22, and 24. Each job passed npm test (including VCS and generated-project handoff regressions), npm run control:verify, and npm run memory:resume."
+    }
   ]
 }

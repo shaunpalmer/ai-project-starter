@@ -4,43 +4,54 @@ HYPOTHESIS_STATUS: ACCEPTED
 
 ## Primary shape
 
-Evolve the existing zero-dependency project-control harness rather than add another agent/orchestration framework. Confidence: high.
+Evolve the existing zero-dependency Node control plane with an engineering-default policy layer and a deterministic Git controller. Do not embed another Python harness or orchestration framework inside DSH. Confidence: high.
 
 ## Capabilities
 
-- Add a system-model readiness gate to the existing Alignment Ladder.
-- Treat project types as presets and allow hybrid capability composition.
-- Scaffold discovery artifacts into generated projects.
-- Give generated projects a small local readiness verifier.
-- Keep CI and repository tests as promotion proof.
+- Central engineering-default precedence and question budget.
+- Automatic ecosystem skill binding from confirmed capabilities.
+- Consolidated authoritative WordPress rules.
+- Deterministic non-interactive Git status/preflight/init/branch/checkpoint/connect/push commands.
+- Existing-machine authentication only; no credential storage.
+- Regression tests for branch safety, explicit staging, protected-branch refusal, and credential-bearing URL rejection.
+- Existing infer-before-implement discovery, readiness gates, memory, destination, and CI remain unchanged unless integration evidence requires a focused extension.
 
 ## Candidate patterns
 
-- State machine / gating for readiness.
-- Pipeline thinking for intent → model → hypothesis → execution.
-- Capability composition instead of class/type inheritance for hybrid domains.
-- Adapter/strategy patterns remain specialist choices only when evidence requires them.
+- Policy/default table for routine decisions.
+- Capability-to-skill routing.
+- Deterministic command controller around Git rather than prompt-driven shell improvisation.
+- Fail-closed guards for protected branches, broad staging, embedded credentials, and remote verification.
+- Focused checkpoint commits rather than whole-worktree commits.
 
 ## Assumptions
 
-- Node 20+ remains available for the harness and generated-project readiness helper.
-- Existing destination and decision-right contracts should remain stable.
-- Legacy experimental scripts do not need to be repaired to deliver this slice.
+- Git is available on normal development machines and GitHub Actions runners.
+- DSH can invoke ordinary Node scripts in the project/harness workspace.
+- Existing Git/SSH/GitHub CLI credentials are the correct authentication source; the harness should never manage secrets itself.
+- A mature ecosystem default such as WordPress->PHP is a routine choice; departing materially from it remains owner-controlled.
 
 ## Alternatives considered
 
-1. Add more project types — rejected because hybrid systems would still be forced into one box.
-2. Add a large router/agent framework — rejected because the harness review explicitly recommends reconciliation and the current controller is already sufficient.
-3. Rely on prompt text only — rejected because it does not provide executable proof that discovery occurred.
+1. Install BMad/BMad Loop inside the harness — rejected because it creates a harness-inside-a-harness-inside-a-harness and duplicates control responsibilities.
+2. Rewrite the control plane in Python — rejected because the existing Node controller is tested, dependency-free, and the implementation language of the controller does not dictate product languages.
+3. Keep Git as an agent prompt convention — rejected because interactive prompts and broad staging already caused unreliable behaviour.
+4. Let the agent choose any stack each run — rejected because mature ecosystems already provide high-quality defaults and repeated questions are part of the observed failure mode.
 
 ## Bounded proof
 
-Regression tests create a generated project, confirm it starts blocked with eight gates and draft discovery artifacts, then promote the artifacts/state and require the local readiness verifier to pass. Existing destination, memory, decision-right, and control tests must continue to pass on Node 20/22/24.
+- Existing 21-test v0.3 suite must remain green.
+- Add VCS tests that prove local init uses a non-protected branch, preflight fails explicitly when identity/required remote are absent, safe branch creation works, focused checkpoints stage only declared files, broad implicit staging is refused, protected branches are refused, and credential-bearing remote URLs are rejected before persistence/network use.
+- Run the complete suite plus `control:verify` and `memory:resume` on Node 20/22/24 in GitHub Actions.
 
 ## Proposed architecture
 
-`scripts/project-control.js` remains the supported control plane. Schema v2 adds `system_model` to task alignment. Ready/in-progress/completed state also requires confirmed system-model and accepted architecture-hypothesis artifacts. Generated projects receive the same artifacts plus `scripts/project-ready.mjs`. `PROJECT-TYPES.md` becomes a preset library instead of a mandatory router. `lock-project.js` delegates only to the supported controller rather than the incompatible legacy planning checker.
+`ENGINEERING-DEFAULTS.md` owns routine language/style/architecture/testing/failure/version-control defaults. `AGENTS.md` and `docs/DECISION-RIGHTS.md` establish zero routine-question behaviour and distinguish applying a default from materially deviating from one. `.github/skills/skill-router/SKILL.md` automatically binds ecosystem rules when capabilities are confirmed. `.github/skills/wordpress-way.md` becomes one non-duplicated authoritative WordPress contract.
+
+`scripts/vcs-control.js` is a zero-dependency, non-interactive Git control surface. It uses `GIT_TERMINAL_PROMPT=0`, existing machine credentials, explicit file lists for staging, safe non-default branches, remote verification via `git ls-remote`, and hard refusal of force/default-branch managed writes. `package.json` exposes the controller without replacing project-control.
+
+A follow-up integration step may copy/hand off these defaults and VCS controls into generated product projects once the controller itself is proven; that integration should be evidence-driven rather than bundled blindly into the first VCS proof.
 
 ## Approval evidence
 
-Shaun explicitly authorised Athena on 2026-09-09 to fix, run, reorganise, and finish the harness on GitHub, while the existing decision contract still reserves merge/release for Shaun.
+On 2026-09-09 Shaun explicitly approved the v0.4 direction: engineering defaults, automatic WordPress/scraping/automation decisions, version-control integration using authorised GitHub access, and consolidation of the duplicate WordPress Way. He authorised Athena to proceed without further routine implementation questions. Merge/release remains separately owner-controlled.

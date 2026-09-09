@@ -1,33 +1,42 @@
 # Current State
 
 Last verified: 2026-09-09
-Verified against: `athena/infer-before-implement` / PR #4
-Verification: GitHub Actions run #4 passed Node 20, 22, and 24; each job passed 21 tests, `npm run control:verify`, and `npm run memory:resume`
+Working branch: `athena/engineering-defaults-v0.4`
+Pull request: #5 — `Harness v0.4: engineering defaults and deterministic VCS`
+Verification: GitHub Actions run #17 passed on Node 20, 22, and 24 with `npm test`, `npm run control:verify`, and `npm run memory:resume` green across the matrix.
 
 ## Current truth
 
-Harness v0.3 infer-before-implement is implemented and verified on PR #4. Natural-language intake can remain `infer` or hybrid; project types are presets rather than mandatory architecture. Schema v2 adds the `system_model` gate, and execution-ready work requires a confirmed system model plus accepted architecture hypothesis.
+Harness v0.3 is merged to `main`. Harness v0.4 is implemented and verified on PR #5.
 
-Generated projects receive their own discovery templates and zero-dependency `scripts/project-ready.mjs`. The verifier checks exact status lines, so instructional text cannot accidentally satisfy a readiness marker. It also refuses execution while the task remains blocked.
+`ENGINEERING-DEFAULTS.md` defines the routine engineering operating policy: rule precedence, zero routine-question budget, language/runtime defaults, architecture defaults, dependency/persistence/failure/testing rules, and version-control expectations.
 
-The supported advisory unlock path now delegates to project-control verification and requires an execution-ready task instead of depending on the known-broken legacy planning checker.
+The WordPress Way has been consolidated into one authoritative non-duplicated rule set. The skill router automatically binds mature ecosystem guidance from confirmed capabilities instead of asking Shaun to activate obvious skills.
+
+`scripts/vcs-control.js` provides non-interactive Git status/preflight/init/branch/checkpoint/connect/push controls. It uses existing machine authentication, stages only explicitly declared files, refuses managed writes on protected default branches, rejects credential-bearing HTTPS remotes, and fails explicitly rather than waiting for hidden terminal prompts.
+
+`scripts/project-handoff.js` installs the proven v0.4 operating layer into a separately generated product project. It copies engineering defaults and required specialist skills, provides `scripts/vcs-control.mjs`, appends the v0.4 rules to the generated `AGENTS.md`, records `.harness/handoff.json`, and initialises local Git on `work/bootstrap` if the project is not already under version control. Existing project-customised handoff files are never silently overwritten.
 
 ## Working capabilities
 
-- Natural-language outcomes can begin discovery without Shaun pre-selecting architecture.
-- Hybrid capability composition is explicit and supported.
-- System state, failure boundaries, invariants, and unknowns are modelled before architecture.
-- Project presets still accelerate familiar WordPress/PHP/Python/TypeScript/API/dashboard work.
-- Generated projects carry discovery artifacts and a local readiness verifier.
-- Existing source/destination, decision-right, memory, checkpoint, and no-deploy boundaries remain intact.
-- Regression proof covers Node 20, 22, and 24.
+- Natural-language infer-before-implement discovery and eight readiness gates from v0.3.
+- Routine engineering question budget of zero.
+- WordPress -> PHP/The WordPress Way default behaviour.
+- Scraping/ingestion -> Python default unless stronger evidence overrides it.
+- General automation/runtime defaults with ecosystem precedence.
+- Automatic skill binding from confirmed responsibilities.
+- Deterministic local Git preflight, init, safe work-branch creation, focused checkpoint commits, remote verification, and authorised non-default-branch push policy.
+- Generated product projects receive the proven engineering/VCS operating handoff without being created inside the reusable starter.
+- Quality benchmark defined for WordPress, scraping/ingestion, and automation families.
 
 ## Known boundaries
 
-- Legacy experimental router/writer/orchestrator scripts remain in the repository but are unsupported.
-- Structural gates cannot prove semantic evidence is truthful; review and runtime evidence still matter.
-- Merge, deployment, provider use, and release remain Shaun-owned actions.
+- Remote GitHub repository creation/deletion is not automatic.
+- Force push, default-branch managed push, destructive history edits, merge, deployment, production mutation, provider spend, and release remain Shaun-owned.
+- `destination --create` and `handoff` are currently two explicit controller steps rather than one combined command; the harness can run both without asking Shaun routine engineering questions.
+- The benchmark contract is defined, but the three real-world golden benchmark briefs have not yet been executed against a merged v0.4 release.
+- Legacy experimental helpers remain unsupported; the old interactive `git-checkpoint.js` is not part of the v0.4 execution path.
 
 ## Next action
 
-Shaun reviews PR #4. If he is satisfied with the change and green checks, he can approve the merge to `main`. After merge, use one deliberately unfamiliar/hybrid project as the first real-world acceptance trial and refine only from observed friction.
+PR #5 is ready for Shaun's review and merge decision. After merge, run three fixed acceptance briefs — WordPress plugin, scraping/ingestion pipeline, and automation tool — and score question count, architecture fit, completeness, verification, manual corrections, and Git recoverability against `docs/QUALITY-BENCHMARK.md`.

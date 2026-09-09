@@ -1,7 +1,7 @@
 {
   "name": "ai-project-starter",
-  "version": "0.3.0",
-  "description": "AI-assisted project harness with infer-before-implement discovery, planning gates, and execution controls.",
+  "version": "0.4.0",
+  "description": "AI-assisted project harness with infer-before-implement discovery, engineering defaults, and deterministic execution controls.",
   "main": "scripts/harness-init.js",
   "type": "module",
   "scripts": {
@@ -15,12 +15,16 @@
     "memory:checkpoint": "node scripts/project-control.js checkpoint",
     "decision": "node scripts/project-control.js decision",
     "destination": "node scripts/project-control.js destination",
+    "handoff": "node scripts/project-handoff.js",
+    "vcs": "node scripts/vcs-control.js",
+    "vcs:status": "node scripts/vcs-control.js status",
+    "vcs:preflight": "node scripts/vcs-control.js preflight",
     "test": "node --test"
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "keywords": ["ai", "agent", "harness", "planning", "discovery", "skills"],
+  "keywords": ["ai", "agent", "harness", "planning", "discovery", "skills", "version-control"],
   "author": "Shaun Palmer",
   "license": "MIT"
 }
