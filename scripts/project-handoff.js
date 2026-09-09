@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const AGENT_MARKER = '## Harness v0.4 operating handoff';
 
 const HANDOFF_PATHS = [
   'ENGINEERING-DEFAULTS.md',
@@ -50,7 +51,7 @@ function assertProjectRoot(projectRoot) {
   const canonicalHarness = fs.realpathSync(ROOT);
   const canonicalProject = fs.realpathSync(projectRoot);
   if (isWithin(canonicalHarness, canonicalProject)) throw new Error('Project handoff target cannot be inside the harness repository.');
-  for (const required of ['.harness/project.json', '.harness/state/active-task.json', '00-PLANNING/SYSTEM-MODEL.md']) {
+  for (const required of ['.harness/project.json', '.harness/state/active-task.json', '00-PLANNING/SYSTEM-MODEL.md', 'AGENTS.md']) {
     if (!fs.existsSync(path.join(canonicalProject, required))) throw new Error(`Target is not a generated harness project; missing ${required}.`);
   }
   return canonicalProject;
@@ -82,8 +83,7 @@ function copyPathSafe(relativePath, copied, unchanged) {
   const stat = fs.statSync(source);
   if (stat.isDirectory()) {
     for (const entry of fs.readdirSync(source, { withFileTypes: true })) {
-      const child = path.join(relativePath, entry.name);
-      copyPathSafe(child, copied, unchanged);
+      copyPathSafe(path.join(relativePath, entry.name), copied, unchanged);
     }
     return;
   }
@@ -94,6 +94,15 @@ function copyVcsController(copied, unchanged) {
   const source = path.join(ROOT, 'scripts', 'vcs-control.js');
   const destination = path.join(destinationRoot, 'scripts', 'vcs-control.mjs');
   copyFileSafe(source, destination, copied, unchanged);
+}
+
+function appendAgentHandoff(projectRoot) {
+  const agentsPath = path.join(projectRoot, 'AGENTS.md');
+  const current = fs.readFileSync(agentsPath, 'utf8');
+  if (current.includes(AGENT_MARKER)) return 'already-present';
+  const block = `\n${AGENT_MARKER}\n\n- Read \`ENGINEERING-DEFAULTS.md\` before making routine implementation choices.\n- Use \`.github/skills/skill-router/SKILL.md\` after the system model is confirmed.\n- Confirmed WordPress work automatically binds \`.github/skills/wordpress-way.md\` and the WordPress plugin skill.\n- Confirmed scraping/ingestion work automatically binds the scraping-pipeline skill.\n- Routine engineering question budget is zero; ask only for consequential decisions under the project's decision-right contract.\n- Use \`node scripts/vcs-control.mjs\` for Git preflight, safe branches, focused checkpoints, remote verification, and authorised non-default-branch pushes.\n- Never store credentials, broadly stage the worktree, force push, push managed work directly to main/master, merge, deploy, or release without the required authority.\n`;
+  fs.appendFileSync(agentsPath, block);
+  return 'appended';
 }
 
 function runNode(scriptPath, args, cwd) {
@@ -113,12 +122,9 @@ function runNode(scriptPath, args, cwd) {
 
 function ensureLocalGit(projectRoot) {
   const gitCheck = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: projectRoot, encoding: 'utf8' });
-  if (gitCheck.status === 0) {
-    return { action: 'already-initialized', repo_root: gitCheck.stdout.trim() };
-  }
+  if (gitCheck.status === 0) return { action: 'already-initialized', repo_root: gitCheck.stdout.trim() };
   const vcsScript = path.join(projectRoot, 'scripts', 'vcs-control.mjs');
-  const output = runNode(vcsScript, ['init', '--cwd', projectRoot, '--branch', 'work/bootstrap'], projectRoot);
-  return JSON.parse(output);
+  return JSON.parse(runNode(vcsScript, ['init', '--cwd', projectRoot, '--branch', 'work/bootstrap'], projectRoot));
 }
 
 function harnessHead() {
@@ -138,6 +144,7 @@ function writeHandoffRecord(projectRoot, copiedPaths) {
       engineering_defaults: 'ENGINEERING-DEFAULTS.md',
       skill_root: '.github/skills',
       vcs_controller: 'scripts/vcs-control.mjs',
+      agent_contract: 'AGENTS.md',
     },
   };
   fs.writeFileSync(recordPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
@@ -154,15 +161,17 @@ function main() {
   const unchanged = [];
   for (const relativePath of HANDOFF_PATHS) copyPathSafe(relativePath, copied, unchanged);
   copyVcsController(copied, unchanged);
+  const agents = appendAgentHandoff(destinationRoot);
   const git = ensureLocalGit(destinationRoot);
   const record = writeHandoffRecord(destinationRoot, copied);
   console.log(JSON.stringify({
     project_root: destinationRoot,
     copied,
     unchanged,
+    agent_contract: agents,
     git,
     handoff: record,
-    next_action: 'Open the generated project workspace. Complete/confirm its system model, resolve its engineering profile from the copied defaults/skills, and work on a safe non-default Git branch.',
+    next_action: 'Open the generated project workspace. Complete/confirm its system model, apply the copied engineering defaults and deterministic skill bindings, then work on a safe non-default Git branch.',
   }, null, 2));
 }
 
