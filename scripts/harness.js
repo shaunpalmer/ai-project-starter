@@ -24,7 +24,7 @@ function run(script, forwarded) {
 }
 
 function usage() {
-  console.log(`Harness lifecycle commands:\n\n  harness doctor\n  harness update --check\n  harness update --apply\n  harness adopt [--source-root /path | --repository <git-url>]\n  harness vcs <status|preflight|branch|checkpoint|connect|push> ...\n\nFrom a generated project use: node scripts/harness.mjs <command>.\nFrom the starter repository use: npm run harness -- <command>.`);
+  console.log(`Harness lifecycle commands:\n\n  harness doctor\n  harness update --check\n  harness update --apply\n  harness adopt [--source-root /path | --repository <git-url>]\n  harness vcs <status|preflight|branch|checkpoint|connect|push> ...\n\nGenerated project:\n  node scripts/harness.mjs <command>\n\nStarter/source repository targeting an existing project:\n  npm run harness -- <command> --cwd /absolute/path/to/project\n\nImportant: the ai-project-starter source clone itself is updated with Git (normally git switch main && git pull --ff-only origin main). The embedded-project updater is for harness copies installed inside product projects; do not gut or replace the product project to upgrade it.`);
 }
 
 if (!command || command === 'help' || command === '--help' || command === '-h') {
