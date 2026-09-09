@@ -1,33 +1,33 @@
 # Current State
 
-Last verified: 2026-08-01
-Verified against: `agent/project-control-memory` working tree
-Verification: `npm test` (7 passed), `npm run control:verify`, WordPress scaffold creation, and filesystem-tree inspection
+Last verified: 2026-09-09
+Verified against: `athena/infer-before-implement` / PR #4
+Verification: GitHub Actions run #4 passed Node 20, 22, and 24; each job passed 21 tests, `npm run control:verify`, and `npm run memory:resume`
 
 ## Current truth
 
-The harness now has a unified project-control layer and a type-aware project lifecycle scaffold. It creates a separate canonical project, carries a small operating contract and memory starters into it, and tells the agent exactly where planning, product code, proof, assembly, distribution, and deployment belong.
+Harness v0.3 infer-before-implement is implemented and verified on PR #4. Natural-language intake can remain `infer` or hybrid; project types are presets rather than mandatory architecture. Schema v2 adds the `system_model` gate, and execution-ready work requires a confirmed system model plus accepted architecture hypothesis.
+
+Generated projects receive their own discovery templates and zero-dependency `scripts/project-ready.mjs`. The verifier checks exact status lines, so instructional text cannot accidentally satisfy a readiness marker. It also refuses execution while the task remains blocked.
+
+The supported advisory unlock path now delegates to project-control verification and requires an execution-ready task instead of depending on the known-broken legacy planning checker.
 
 ## Working capabilities
 
-- Five-question intake and planning documents already exist.
-- Project control can reconstruct a compact resume context from checked-in files.
-- Structured alignment state distinguishes `YES`, `NO`, and `UNKNOWN` with evidence.
-- Decision-right routing separates routine developer work from Shaun-owned consequential choices.
-- Destination preview/create separates canonical source from an optional deployment target.
-- A created project is self-orienting through its own `AGENTS.md`, intake, North Star, current state, and structured task state.
-- Common lifecycle folders are `00-PLANNING/`, `docs/`, `src/`, `tests/`, `build/`, and `dist/`.
-- WordPress source is bounded to `src/<plugin-slug>/` and its distribution contract produces a slug-rooted versioned ZIP.
-- Checkpoints capture repository facts without pretending those facts explain architectural intent.
+- Natural-language outcomes can begin discovery without Shaun pre-selecting architecture.
+- Hybrid capability composition is explicit and supported.
+- System state, failure boundaries, invariants, and unknowns are modelled before architecture.
+- Project presets still accelerate familiar WordPress/PHP/Python/TypeScript/API/dashboard work.
+- Generated projects carry discovery artifacts and a local readiness verifier.
+- Existing source/destination, decision-right, memory, checkpoint, and no-deploy boundaries remain intact.
+- Regression proof covers Node 20, 22, and 24.
 
 ## Known boundaries
 
-- The scaffold carries the minimum project-local guidance; it does not duplicate the entire reusable starter repository.
-- The WordPress package shape is defined, but a reproducible ZIP/checksum command remains a separate release-adapter slice.
-- The command does not deploy code into WordPress or another runtime.
-- A semantic memory update still belongs to the agent; deterministic code validates structure and captures facts.
-- Merging and releasing remain human decisions.
+- Legacy experimental router/writer/orchestrator scripts remain in the repository but are unsupported.
+- Structural gates cannot prove semantic evidence is truthful; review and runtime evidence still matter.
+- Merge, deployment, provider use, and release remain Shaun-owned actions.
 
 ## Next action
 
-Review the focused project-lifecycle draft PR, then run one real WordPress project from its generated VS Code workspace through resume → plan → execute → verify → checkpoint → package. Implement the packaging adapter from the friction demonstrated by that trial.
+Shaun reviews PR #4. If he is satisfied with the change and green checks, he can approve the merge to `main`. After merge, use one deliberately unfamiliar/hybrid project as the first real-world acceptance trial and refine only from observed friction.

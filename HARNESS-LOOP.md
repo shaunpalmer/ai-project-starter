@@ -1,148 +1,90 @@
-HARNESS-LOOP.md
-Purpose
+# HARNESS-LOOP.md — Infer Before Implement
 
-This loop controls how the AI works inside this project starter.
+## Purpose
 
-The AI must not keep improving forever. It must move through clear phases, verify the result, and stop when the work is good enough to ship.
+Move from intent to verified software without guessing unfamiliar architecture, handing routine engineering back to Shaun, or polishing forever.
 
-Core Loop
+## Core loop
 
-## LOOP
-
-| Step | Phase | Purpose |
-|---:|---|---|
-| 1 | Discovery | Identify what information is missing. |
-| 2 | Planning | Break the work into clear steps. |
-| 3 | Execution | Complete the next useful step. |
-| 4 | Verification | Check the result against the goal. |
-| 5 | Iteration | Improve anything that failed. |
-| 6 | Ship | Give the final version only when it is good enough. |For every project, task, or feature, follow this loop:
-
-
-# Discovery
-
-Audit the entire project structure to establish a complete baseline of the current state.
-
-Do not limit reading to assumed "relevant" files; verify the full context first.
-
-Identify exactly what logic, information, or files are missing to achieve the goal.
-
-Ask Shaun only for information that cannot be safely inferred.
+```text
+Intent
+  ↓
+Discovery
+  ↓
+System Model
+  ↓
+Architecture Hypothesis
+  ↓
 Planning
-Break the work into clear steps.
-Choose the next useful step.
-Do not plan the whole dream if a smaller first slice can ship.
+  ↓
 Execution
-Complete one useful step at a time.
-Do not rewrite unrelated code.
-Do not change architecture unless the planning gate allows it.
+  ↓
 Verification
-Check the result against the goal.
-Run available tests, linting, build commands, or manual checks.
-Confirm that the output matches the project type, architecture, and success criteria.
-Iteration
-If verification fails, fix only the failed part.
-Re-run verification.
-Record what changed.
-Ship
-Provide the final version only when the done rules pass.
-Stop improving once the result is good enough.
-Do not add extra features unless Shaun asks for them.
-Done Rules
+  ↓
+Repair in place (only if proof fails)
+  ↓
+Ship / stop
+```
 
-A task is finished when all of these are true:
+## 1. Intent
 
-The stated goal is met.
-No known blocker remains.
-The result matches the approved architecture.
-The smallest useful version has been completed.
-Verification has passed.
-Any changed decisions are recorded in AI-NOTES.md.
-The next step is clear.
+Extract the desired outcome, user/business reason, first useful observable slice, hard constraints, and done condition. Separate those from implementation suggestions.
 
-If these are not true, the loop continues.
+## 2. Discovery
 
-Stop Rules
+Inspect the repository, dependencies, existing architecture, accepted decisions, tests, external contracts, and relevant runtime evidence. Do not limit discovery to files that look familiar.
 
-The AI must stop and ask Shaun when:
+When the domain is unfamiliar, investigate responsibilities and failure modes before selecting patterns. Ask Shaun only for information that cannot be safely inferred or proved and belongs to him under `docs/DECISION-RIGHTS.md`.
 
-The project goal is unclear.
-The architecture choice is unsafe or ambiguous.
-The source of truth is unknown.
-A database/storage decision cannot be safely inferred.
-The next step would create code before the planning gates are cleared.
-Two verification attempts fail for the same reason.
-Anti-Loop Rule
+## 3. System Model
 
-The AI must not keep polishing.
+Maintain `00-PLANNING/SYSTEM-MODEL.md` with:
 
-Once the done rules pass, stop, summarize what changed, and give Shaun the next practical step.
+- goal;
+- inputs and outputs;
+- capability composition;
+- data flow;
+- state/persistence and idempotency;
+- failure boundaries and fallbacks;
+- invariants;
+- unknowns;
+- evidence.
 
+Do not move beyond discovery until the model is evidence-backed. `UNKNOWN` means inspect or run a bounded proof unless it is a consequential owner decision.
 
-## Detailed Phase Directives
+## 4. Architecture Hypothesis
 
-### Discovery
-* **Full Structural Audit:** Audit the entire project structure to establish a complete baseline of the current state.
-* **No Guessing:** Do not limit reading to assumed "relevant" files; verify the full context first.
-* **Dependency Check:** Audit `package.json` (or environment equivalents) to understand current dependencies and versions before proposing solutions.
-* **Identify Gaps:** Identify exactly what logic, information, or files are missing to achieve the goal.
-* **Information Request:** Ask Shaun only for information that cannot be safely inferred.
+Infer a primary shape plus capabilities and confidence. Treat `PROJECT-TYPES.md` as preset evidence, not mandatory routing.
 
-### Planning
-* **Task Definition:** Break the work into clear, actionable steps.
-* **Tangible Artifact:** Output the plan as a clear checklist (e.g., `CURRENT-PLAN.md` or a markdown checkbox list) *before* starting Execution.
-* **Incremental Progress:** Choose the next useful step. Do not plan the whole dream if a smaller first slice can ship.
+Compare credible alternatives. Run the smallest bounded proof needed to resolve material uncertainty. Obtain Shaun's approval when architecture, language, framework, database, provider, cost, or security boundary materially changes. Then promote `HYPOTHESIS_STATUS` to `ACCEPTED`.
 
-### Execution
-* **Focus:** Complete one useful step at a time.
-* **Integrity:** Provide complete, working code blocks. Never use placeholders like `// ... rest of code here ...` or truncate existing logic unless explicitly instructed.
-* **Consistency:** Do not rewrite unrelated code. Do not change architecture unless the planning gate allows it.
+## 5. Planning
 
-### Verification
-* **Goal Alignment:** Check the result against the goal.
-* **Rigorous Testing:** Run available tests, linting, build commands, or manual checks.
-* **Confirmation:** Confirm that the output matches the project type, architecture, and success criteria.
+Define the smallest safe useful slice and tangible acceptance criteria. Run the complexity brake before adding dependencies, services, queues, layers, tables, classes, or build tooling.
 
-### Iteration
-* **Targeted Fixes:** If verification fails, fix only the failed part.
-* **Record Keeping:** Re-run verification and record what changed in `AI-NOTES.md`.
+## 6. Execution
 
-### Ship
-* **Condition:** Provide the final version only when the "Done Rules" pass.
-* **Scope:** Do not add extra features unless Shaun asks for them.
-* **Efficiency:** Stop improving once the result is good enough.
+Complete one useful step at a time inside the accepted source boundary. Do not rewrite unrelated work or silently change architecture.
 
-## Done Rules
-A task is finished when **all** of these are true:
-* The stated goal is met.
-* No known blocker remains.
-* The result matches the approved architecture.
-* The smallest useful version has been completed.
-* Verification has passed.
-* All temporary debug code or `console.log` statements used during Verification have been removed.
-* Any changed decisions are recorded in `AI-NOTES.md`.
-* The next step is clear.
+## 7. Verification
 
-*If these are not true, the loop continues.*
+Run the strongest available proof: unit/integration tests, syntax checks, builds, smoke tests, scenario tests, filesystem inspection, API contract checks, or browser/runtime evidence.
 
-## Stop Rules
-The AI must stop and ask Shaun when:
-* The project goal is unclear.
-* The architecture choice is unsafe or ambiguous.
-* The source of truth is unknown.
-* A database/storage decision cannot be safely inferred.
-* The next step would create code before the planning gates are cleared.
-* Two verification attempts fail for the same reason.
+## 8. Repair in place
 
-## Anti-Loop Rule
-The AI must not keep polishing. Once the "Done Rules" pass, stop, summarize what changed, and give Shaun the next practical step.
+If proof fails, repair only the failed responsibility. Re-run proof. If evidence invalidates the architecture, use the Controlled Pivot Loop instead of thrashing.
 
-## Resolution Status
-| Status |
-| :--- |
-| RESOLVED |
-| NEEDS SHAUN/Senior Developer |
-| NEEDS ARCHITECTURE UPDATE |
-| NEEDS PROTOTYPE |
-| DEFERRED |
-| REJECTED |
+## 9. Ship / stop
+
+Stop when the stated outcome, minimum slice, and proof condition pass. Do not add unrequested features. Merge, deployment, and release remain Shaun-owned actions unless explicitly authorised.
+
+## Readiness contract
+
+Before execution:
+
+- all eight Alignment Ladder gates are `YES`;
+- `MODEL_STATUS: CONFIRMED`;
+- `HYPOTHESIS_STATUS: ACCEPTED`;
+- the first slice and proof are explicit.
+
+The supported structural verifier is `npm run control:verify`. The advisory unlock additionally requires the active task to be `ready`, `in_progress`, or `completed`.

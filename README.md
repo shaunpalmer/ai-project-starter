@@ -1,13 +1,23 @@
 # AI Project Starter
 
-A planning-first development harness for working with AI agents without handing routine programming decisions back to the project owner.
+A planning-first development harness that accepts a clear natural-language outcome, models unfamiliar systems before architecture is locked, and keeps routine programming decisions with the AI instead of handing them back to Shaun.
 
-The harness keeps four things distinct:
+## Infer before implement
 
-- the North Star: why the project exists;
-- current truth: what is true now and what happens next;
-- decision history: why a route was chosen or superseded;
-- executable evidence: code, tests, Git facts, and structured task state.
+The supported flow is:
+
+```text
+intent → evidence → system model → project shape + capabilities → architecture hypothesis → first slice → execute → verify → stop
+```
+
+Known WordPress work can classify quickly. Hybrid work such as scraping + browser automation + API integration + persistent state is allowed to remain hybrid; `PROJECT-TYPES.md` provides presets rather than mandatory boxes.
+
+Ready/in-progress/completed work requires:
+
+- task schema v2;
+- eight evidence-backed Alignment Ladder gates;
+- `MODEL_STATUS: CONFIRMED` in `00-PLANNING/SYSTEM-MODEL.md`;
+- `HYPOTHESIS_STATUS: ACCEPTED` in `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`.
 
 ## Requirements
 
@@ -29,11 +39,11 @@ Then read `AGENTS.md` and the files named by the active task.
 
 | Command | Purpose |
 |---|---|
-| `npm run setup` | Initialise required harness folders and the planning lock |
+| `npm run setup` | Initialise required harness folders and advisory planning lock |
 | `npm run status` | Show planning lock status |
-| `npm run unlock` | Verify planning and project control before unlocking |
-| `npm run memory:resume` | Reconstruct compact current context |
-| `npm run control:verify` | Validate memory, decisions, and alignment state |
+| `npm run unlock` | Remove the advisory lock only when control state verifies and the task is execution-ready |
+| `npm run memory:resume` | Reconstruct compact current context, including discovery status |
+| `npm run control:verify` | Validate memory, decisions, schema v2 alignment, and discovery artifacts |
 | `npm run memory:checkpoint -- --summary "..."` | Capture a factual handoff checkpoint |
 | `npm run decision -- --kind routine` | Resolve who owns a decision category |
 | `npm run destination -- --slug example --workspace-root /absolute/path` | Preview a canonical project destination |
@@ -41,28 +51,30 @@ Then read `AGENTS.md` and the files named by the active task.
 
 ## Create a bounded project destination
 
-Preview first:
+Known type:
 
 ```bash
 npm run destination -- \
   --name "Super Clean Deals" \
   --slug super-clean-deals \
   --type wordpress-plugin \
-  --workspace-root /home/shaun-prime/Development/projects \
-  --deploy-root /var/www/html/wordpress/wp-content/plugins
+  --workspace-root /home/shaun-prime/Development/projects
 ```
 
-Add `--create` only after the displayed paths are correct. Creation writes a project-local `AGENTS.md`, intake and memory starters, project-control state, and the standard `00-PLANNING/`, `docs/`, `src/`, `tests/`, `build/`, and `dist/` lifecycle folders into an empty canonical project directory. It does not deploy or copy files into WordPress.
+Unknown/hybrid type:
 
-For a WordPress plugin, the command reports these distinct paths:
+```bash
+npm run destination -- \
+  --name "Prospecting Pipeline" \
+  --slug prospecting-pipeline \
+  --workspace-root /home/shaun-prime/Development/projects
+```
 
-- `working_directory`: open this project root in VS Code;
-- `code_root`: author the plugin under `src/<plugin-slug>/`;
-- `build_root`: assemble a disposable installable tree here;
-- `distribution_root`: place the verified `<plugin-slug>-<version>.zip` here;
-- `deploy_destination`: optional external WordPress runtime path.
+Omitting `--type` records `infer`. Add `--create` only after the previewed paths are correct.
 
-See `docs/PROJECT-LAYOUT.md` for the complete folder ownership and packaging contract.
+Creation writes a project-local contract, intake, `SYSTEM-MODEL.md`, `ARCHITECTURE-HYPOTHESIS.md`, task state, `scripts/project-ready.mjs`, and the standard `00-PLANNING/`, `docs/`, `src/`, `tests/`, `build/`, and `dist/` lifecycle folders. It does not deploy or call providers.
+
+For WordPress, authored source remains bounded under `src/<plugin-slug>/`; other types use `src/` until the accepted architecture refines ownership.
 
 ## Memory model
 
@@ -70,19 +82,17 @@ See `docs/PROJECT-LAYOUT.md` for the complete folder ownership and packaging con
 |---|---|
 | `docs/NORTH-STAR.md` | Stable purpose and invariants |
 | `docs/CURRENT-STATE.md` | Current truth and next action |
+| `00-PLANNING/SYSTEM-MODEL.md` | Evidence-backed model before implementation |
+| `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md` | Candidate route, alternatives, bounded proof, approval |
 | `docs/decisions/` | Accepted and superseded technical decisions |
-| `.harness/state/active-task.json` | Active task and Alignment Ladder |
+| `.harness/state/active-task.json` | Active task and eight-gate Alignment Ladder |
 | `.harness/state/checkpoints/` | Generated factual handoffs |
 | Git | Exact code history |
 
-See `docs/PROJECT-CONTROL.md` for the Alignment Ladder, Controlled Pivot Loop, session protocol, and destination contract. See `docs/DECISION-RIGHTS.md` for what Athena decides and what requires Shaun.
+## Supported vs legacy controls
 
-## Current boundary
+Use `project-control.js`, `lock-project.js`, the generated `project-ready.mjs`, tests, and GitHub checks as the supported control path.
 
-This slice creates and validates control state plus the project lifecycle scaffold. Reproducible packaging commands, runtime deployment adapters, and semantic retrieval remain separate slices; project creation never performs those actions implicitly.
+Older scripts such as `guarded-writer.js`, `harness-flip-os.js`, `harness-loop.js`, `router.js`, `pacing-loop.js`, and `git-checkpoint.js` remain unverified legacy experiments. They are not production enforcement or publication commands. The supported unlock path no longer depends on the known-incompatible legacy planning checker.
 
-Use the commands listed above as the supported interface. Setup and lock commands target the harness containing the script, even when invoked from another directory. Setup fails when core files are missing; a denied unlock returns a nonzero exit status. The planning lock is an advisory marker, not filesystem protection. Blank intake templates intentionally fail the legacy planning checker.
-
-Generated projects carry guidance and state files, not an installed copy of this CLI, skills, or a Git repository. Their agent reads and maintains the generated files directly. Do not run the harness's memory command expecting it to target another project merely because the shell changed directories.
-
-Older scripts such as `guarded-writer.js`, `harness-flip-os.js`, `harness-loop.js`, `router.js`, `pacing-loop.js`, and `git-checkpoint.js` are unverified legacy experiments. Several are incompatible with this package's ES-module mode; others simulate work or broadly stage files. They are not supported enforcement or publication commands. See [the harness review](docs/HARNESS-REVIEW.md) for findings, proof, and remaining work.
+See `docs/PROJECT-CONTROL.md`, `docs/DECISION-RIGHTS.md`, and `docs/HARNESS-REVIEW.md` for the contracts and known boundaries.

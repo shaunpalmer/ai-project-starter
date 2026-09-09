@@ -30,6 +30,14 @@ function fixture(t) {
   return root;
 }
 
+function writeTask(root, mutate) {
+  const statePath = path.join(root, '.harness/state/active-task.json');
+  const task = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  mutate(task);
+  fs.writeFileSync(statePath, `${JSON.stringify(task, null, 2)}\n`);
+  return task;
+}
+
 test('destination requires explicit absolute workspace and deployment roots', (t) => {
   const workspace = temporaryDirectory(t);
   for (const args of [[], ['--workspace-root', '.'],
@@ -44,9 +52,7 @@ test('destination refuses product paths inside the harness, including symlink al
   const alias = path.join(workspace, 'harness-alias');
   fs.symlinkSync(ROOT, alias, 'dir');
   for (const directory of [ROOT, path.join(alias, 'not-created')]) {
-    const result = run(ROOT, 'project-control.js', [
-      'destination', '--slug', 'sample', '--workspace-root', directory,
-    ]);
+    const result = run(ROOT, 'project-control.js', ['destination', '--slug', 'sample', '--workspace-root', directory]);
     assert.notEqual(result.status, 0, result.stdout);
     assert.match(result.stderr, /harness/);
   }
@@ -56,9 +62,7 @@ test('destination refuses symlink escapes without writing into the target', (t) 
   const workspace = temporaryDirectory(t);
   const target = temporaryDirectory(t);
   fs.symlinkSync(target, path.join(workspace, 'sample'), 'dir');
-  const result = run(ROOT, 'project-control.js', [
-    'destination', '--slug', 'sample', '--workspace-root', workspace, '--create',
-  ]);
+  const result = run(ROOT, 'project-control.js', ['destination', '--slug', 'sample', '--workspace-root', workspace, '--create']);
   assert.notEqual(result.status, 0, result.stdout);
   assert.deepEqual(fs.readdirSync(target), []);
 });
@@ -67,8 +71,7 @@ test('destination refuses overlapping source and deployment locations', (t) => {
   const workspace = temporaryDirectory(t);
   for (const deploy of [workspace, path.join(workspace, 'sample')]) {
     const result = run(ROOT, 'project-control.js', [
-      'destination', '--slug', 'sample', '--workspace-root', workspace,
-      '--deploy-root', deploy, '--create',
+      'destination', '--slug', 'sample', '--workspace-root', workspace, '--deploy-root', deploy, '--create',
     ]);
     assert.notEqual(result.status, 0, result.stdout);
     assert.equal(fs.existsSync(path.join(workspace, 'sample')), false);
@@ -80,9 +83,7 @@ test('destination preserves an existing project and rejects valued create flags'
   const destination = path.join(workspace, 'sample');
   fs.mkdirSync(destination);
   fs.writeFileSync(path.join(destination, 'keep.txt'), 'owner data');
-  const result = run(ROOT, 'project-control.js', [
-    'destination', '--slug', 'sample', '--workspace-root', workspace, '--create',
-  ]);
+  const result = run(ROOT, 'project-control.js', ['destination', '--slug', 'sample', '--workspace-root', workspace, '--create']);
   assert.notEqual(result.status, 0);
   assert.deepEqual(fs.readdirSync(destination), ['keep.txt']);
   assert.equal(fs.readFileSync(path.join(destination, 'keep.txt'), 'utf8'), 'owner data');
@@ -93,7 +94,7 @@ test('destination preserves an existing project and rejects valued create flags'
   assert.equal(fs.existsSync(path.join(workspace, 'other')), false);
 });
 
-test('active work cannot bypass an unresolved gate by changing its status', (t) => {
+test('active work cannot bypass an unresolved gate by changing status', (t) => {
   const root = fixture(t);
   const statePath = path.join(root, '.harness/state/active-task.json');
   const task = JSON.parse(fs.readFileSync(statePath, 'utf8'));
@@ -106,6 +107,19 @@ test('active work cannot bypass an unresolved gate by changing its status', (t) 
   task.status = 'blocked';
   fs.writeFileSync(statePath, JSON.stringify(task));
   assert.equal(run(root, 'project-control.js', ['verify']).status, 0);
+});
+
+test('ready work cannot bypass draft discovery artifacts', (t) => {
+  const root = fixture(t);
+  writeTask(root, (task) => {
+    task.status = 'ready';
+    task.alignment = task.alignment.map((gate) => ({ ...gate, answer: 'YES', evidence: `proved ${gate.gate}` }));
+  });
+  const modelPath = path.join(root, '00-PLANNING/SYSTEM-MODEL.md');
+  fs.writeFileSync(modelPath, fs.readFileSync(modelPath, 'utf8').replace('MODEL_STATUS: CONFIRMED', 'MODEL_STATUS: DRAFT'));
+  const result = run(root, 'project-control.js', ['verify']);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /MODEL_STATUS: CONFIRMED/);
 });
 
 test('control verification rejects malformed, duplicate, and unsupported state', (t) => {
@@ -131,10 +145,29 @@ test('denied unlock and unknown lock commands fail, preserving the lock', (t) =>
   const root = fixture(t);
   const lock = path.join(root, '.planning-lock');
   fs.writeFileSync(lock, 'keep locked');
+  writeTask(root, (task) => {
+    task.status = 'blocked';
+    task.alignment = task.alignment.map((gate) => gate.gate === 'proof'
+      ? { ...gate, answer: 'UNKNOWN', evidence: 'Proof intentionally unresolved for denied-unlock regression.' }
+      : gate);
+  });
   const result = run(root, 'lock-project.js', ['unlock']);
   assert.notEqual(result.status, 0, result.stdout);
   assert.equal(fs.readFileSync(lock, 'utf8'), 'keep locked');
   assert.notEqual(run(root, 'lock-project.js', ['unknown']).status, 0);
+});
+
+test('unlock succeeds only after discovery and all eight gates are ready', (t) => {
+  const root = fixture(t);
+  const lock = path.join(root, '.planning-lock');
+  fs.writeFileSync(lock, 'locked');
+  writeTask(root, (task) => {
+    task.status = 'ready';
+    task.alignment = task.alignment.map((gate) => ({ ...gate, answer: 'YES', evidence: `proved ${gate.gate}` }));
+  });
+  const result = run(root, 'lock-project.js', ['unlock']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(fs.existsSync(lock), false);
 });
 
 test('setup and lock commands target their own harness from another directory', (t) => {
@@ -157,18 +190,19 @@ test('setup fails before creating anything when core files are missing', (t) => 
   assert.equal(fs.existsSync(path.join(root, 'src')), false);
 });
 
-test('resume and checkpoint preserve the current task and explicit handoff', (t) => {
+test('resume and checkpoint preserve current task, discovery state, and handoff', (t) => {
   const root = fixture(t);
   const resume = run(root, 'project-control.js', ['resume']);
   assert.equal(resume.status, 0, resume.stderr);
   const context = JSON.parse(resume.stdout);
   assert.deepEqual(context.active_task, JSON.parse(fs.readFileSync(path.join(root, '.harness/state/active-task.json'), 'utf8')));
-  assert.ok(context.active_decisions.some((decision) => decision.id === 'ADR-0002'));
+  assert.ok(context.active_decisions.some((decision) => decision.id === 'ADR-0003'));
+  assert.equal(context.discovery.length, 2);
+  assert.ok(context.discovery.every((item) => item.status === 'confirmed'));
   const checkpointDir = path.join(root, '.harness/state/checkpoints');
   const before = new Set(fs.readdirSync(checkpointDir));
   const result = run(root, 'project-control.js', [
-    'checkpoint', '--summary', 'Disposable proof completed',
-    '--next', 'Complete the new project intake', '--verification', 'Fixture checks passed',
+    'checkpoint', '--summary', 'Disposable proof completed', '--next', 'Complete the new project intake', '--verification', 'Fixture checks passed',
   ]);
   assert.equal(result.status, 0, result.stderr);
   const created = fs.readdirSync(checkpointDir).filter((name) => !before.has(name));
