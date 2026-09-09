@@ -103,6 +103,47 @@ Use `scripts/vcs-control.js` for deterministic Git operations when working from 
 - Remote repository creation/deletion, merge, release, deployment, and destructive history edits remain Shaun-owned.
 - Version-control failures are explicit execution failures; do not freeze, wait for hidden terminal prompts, or silently continue unversioned.
 
+## Harness lifecycle routing
+
+When Shaun says `harness doctor`, `/doctor`, `harness update`, `upgrade this project to the latest harness`, or equivalent, first determine whether the current workspace is the reusable starter/source repository or a generated product project.
+
+### Reusable starter/source repository
+
+If the workspace is `ai-project-starter` itself and Shaun wants **that source clone** updated, use Git rather than the embedded-project lifecycle updater:
+
+1. inspect `git status` and current branch;
+2. preserve/checkpoint local work if the tree is not clean;
+3. switch to `main` when safe;
+4. use `git pull --ff-only origin main` (or equivalent evidence-backed fast-forward update);
+5. run the harness verification suite.
+
+Do not treat the reusable starter repository as a legacy embedded project and do not gut/reset it to obtain the latest source.
+
+### Generated product project with v0.5+ lifecycle controller
+
+Run the project-local commands:
+
+```bash
+node scripts/harness.mjs doctor
+node scripts/harness.mjs update --check
+node scripts/harness.mjs update --apply
+```
+
+Check before apply. Real three-way conflicts block replacement.
+
+### Existing older product project without `scripts/harness.mjs`
+
+Use a freshly updated v0.5+ starter repository as the bootstrap controller and target the product project with `--cwd`:
+
+```bash
+npm run harness -- doctor --cwd /absolute/path/to/project
+```
+
+- If `.harness/handoff.json` exists, skip adoption and run update check/apply through the starter controller.
+- If doctor reports `legacy-unmanaged`, run `adopt` first, then update check/apply.
+- Never remove product code or replace the whole project directory as an upgrade strategy.
+- Once upgraded, future lifecycle work is project-local through `scripts/harness.mjs`.
+
 ## Controlled pivots
 
 Follow `docs/PROJECT-CONTROL.md` when an assumption fails. Keep the North Star stable unless Shaun changes it. Freeze the affected slice, record evidence, prove the replacement, obtain consequential approval, unwind or migrate, reconcile documentation and tests, and supersede the old ADR.
