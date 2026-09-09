@@ -30,6 +30,14 @@ function fixture(t) {
   return root;
 }
 
+function writeTask(root, mutate) {
+  const statePath = path.join(root, '.harness/state/active-task.json');
+  const task = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  mutate(task);
+  fs.writeFileSync(statePath, `${JSON.stringify(task, null, 2)}\n`);
+  return task;
+}
+
 test('destination requires explicit absolute workspace and deployment roots', (t) => {
   const workspace = temporaryDirectory(t);
   for (const args of [[], ['--workspace-root', '.'],
@@ -103,11 +111,10 @@ test('active work cannot bypass an unresolved gate by changing status', (t) => {
 
 test('ready work cannot bypass draft discovery artifacts', (t) => {
   const root = fixture(t);
-  const statePath = path.join(root, '.harness/state/active-task.json');
-  const task = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-  task.status = 'ready';
-  task.alignment = task.alignment.map((gate) => ({ ...gate, answer: 'YES', evidence: `proved ${gate.gate}` }));
-  fs.writeFileSync(statePath, JSON.stringify(task));
+  writeTask(root, (task) => {
+    task.status = 'ready';
+    task.alignment = task.alignment.map((gate) => ({ ...gate, answer: 'YES', evidence: `proved ${gate.gate}` }));
+  });
   const modelPath = path.join(root, '00-PLANNING/SYSTEM-MODEL.md');
   fs.writeFileSync(modelPath, fs.readFileSync(modelPath, 'utf8').replace('MODEL_STATUS: CONFIRMED', 'MODEL_STATUS: DRAFT'));
   const result = run(root, 'project-control.js', ['verify']);
@@ -138,6 +145,12 @@ test('denied unlock and unknown lock commands fail, preserving the lock', (t) =>
   const root = fixture(t);
   const lock = path.join(root, '.planning-lock');
   fs.writeFileSync(lock, 'keep locked');
+  writeTask(root, (task) => {
+    task.status = 'blocked';
+    task.alignment = task.alignment.map((gate) => gate.gate === 'proof'
+      ? { ...gate, answer: 'UNKNOWN', evidence: 'Proof intentionally unresolved for denied-unlock regression.' }
+      : gate);
+  });
   const result = run(root, 'lock-project.js', ['unlock']);
   assert.notEqual(result.status, 0, result.stdout);
   assert.equal(fs.readFileSync(lock, 'utf8'), 'keep locked');
@@ -148,11 +161,10 @@ test('unlock succeeds only after discovery and all eight gates are ready', (t) =
   const root = fixture(t);
   const lock = path.join(root, '.planning-lock');
   fs.writeFileSync(lock, 'locked');
-  const statePath = path.join(root, '.harness/state/active-task.json');
-  const task = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-  task.status = 'ready';
-  task.alignment = task.alignment.map((gate) => ({ ...gate, answer: 'YES', evidence: `proved ${gate.gate}` }));
-  fs.writeFileSync(statePath, JSON.stringify(task));
+  writeTask(root, (task) => {
+    task.status = 'ready';
+    task.alignment = task.alignment.map((gate) => ({ ...gate, answer: 'YES', evidence: `proved ${gate.gate}` }));
+  });
   const result = run(root, 'lock-project.js', ['unlock']);
   assert.equal(result.status, 0, result.stderr);
   assert.equal(fs.existsSync(lock), false);
