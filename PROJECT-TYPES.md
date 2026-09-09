@@ -1,464 +1,176 @@
-# PROJECT-TYPES.md — Type Router and Patterns
+# PROJECT-TYPES.md — Project Shape Presets
 
-AI: Use this file to classify the project from PROJECT-INTAKE.md and load the correct patterns, database, structure, and skills.
+AI: Treat these as reusable architecture evidence, not mandatory boxes. Infer the system first, then use one preset, compose several capability patterns, or use a custom shape.
 
-**Do not prescribe patterns that don't match the type.**
+A natural-language brief may begin with `infer` or `hybrid`. Do not select storage, framework, folder boundaries, or patterns merely because one label sounds close.
 
-Every type lives in the project lifecycle wrapper defined by `docs/PROJECT-LAYOUT.md`. The folder structures below are code-root shapes: labels such as `/project/`, `/tool/`, or `/api/` mean the configured `code_root`, not the Git repository root. Planning belongs in `00-PLANNING/`, authored code belongs under `src/`, proof belongs in `tests/`, generated assembly belongs in `build/`, and finished delivery artifacts belong in `dist/`.
+## Routing rule
 
----
+1. Read `PROJECT-INTAKE.md`.
+2. Confirm `00-PLANNING/SYSTEM-MODEL.md` before locking architecture.
+3. Identify:
+   - primary shape;
+   - capability composition;
+   - classification confidence;
+   - material unknowns.
+4. If confidence is high and one preset fits, use it as a starting default.
+5. If the system crosses domains, compose capabilities instead of forcing one type.
+6. If confidence is low, inspect evidence or run a bounded proof.
+7. Record the result in `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`.
+8. Architecture, language, framework, database, provider, cost, and security-boundary changes still follow `docs/DECISION-RIGHTS.md`.
 
-## Type 1: WordPress Plugin
+## Capability vocabulary
 
-**When:** Project type in PROJECT-INTAKE.md is "WordPress plugin"
+Common capabilities include:
 
-**Architecture:**
-- OOP plugin class structure
-- Hooks (add_action, add_filter) only in bootstrap
-- Classes for each responsibility (admin, frontend, services, database)
-- Custom DB tables with $wpdb->prepare()
-- Admin settings page or dashboard
-- REST endpoints (optional)
+- WordPress lifecycle and hooks
+- browser automation
+- HTTP/API integration
+- scraping and parsing
+- persistent state
+- idempotent ingestion
+- queues / scheduling
+- retry / backoff / circuit breaking
+- enrichment
+- validation / normalisation
+- reporting / dashboard UI
+- authentication / permissions
+- file processing
+- CLI automation
+- public API surface
+- deployment / packaging
 
-**Database:**
-- MariaDB/MySQL (required by WordPress)
-- Custom table(s) for plugin data
-- WordPress post/meta for content
-- No additional storage needed
-
-**Code-root structure (`src/plugin-name/`):**
-```
-src/plugin-name/
-├── plugin-name.php (header, bootstrap)
-├── /includes/ (class-plugin.php, class-activator.php)
-├── /admin/ (admin page, settings)
-├── /frontend/ (shortcodes, widgets)
-├── /database/ (installer, repository)
-├── /services/ (business logic)
-├── /adapters/ (external integrations)
-└── /templates/ (front-end output)
-```
-
-Package the verified `plugin-name/` directory as `dist/plugin-name-{version}.zip`; the ZIP has exactly one top-level `plugin-name/` folder and excludes harness, planning, project documentation, tests, secrets, and development tooling.
-
-**Skills to load:**
-- `wordpress-plugin` (mandatory)
-- `database-design` (if custom tables needed)
-- `api-design` (if REST endpoints needed)
-
-**What NOT to do:**
-- Don't use MongoDB
-- Don't abstract away WordPress conventions
-- Don't put SQL outside the repository layer
-- Don't echo output outside views/templates
-
-**First build slice:**
-- Plugin activates cleanly
-- Custom tables created
-- One admin page or dashboard tile works
-- No functions, only classes
+Capabilities describe responsibilities. They do not imply one class, process, service, table, or dependency per capability.
 
 ---
 
-## Type 2: PHP Web Interface
+## Preset 1: WordPress Plugin
 
-**When:** Project type in PROJECT-INTAKE.md is "PHP web interface"
+**Strong fit when:** WordPress itself is the runtime and extension surface.
 
-**Architecture:**
-- MVC-style separation (models, views, controllers)
-- Classes, not procedural code
-- Repository pattern for database access
-- Service layer for business logic
-- Simple front-end (Bootstrap or Tailwind)
-- No framework required for small projects
+**Typical shape:** OOP plugin bootstrap, hooks at composition boundaries, responsibility-focused classes, WordPress APIs first, custom tables only when data shape/query needs justify them.
 
-**Database:**
-- MySQL / MariaDB for persistent data
-- SQLite for local-only / single-user projects
-- Choose based on deployment target
+**Likely capabilities:** admin UI, frontend integration, REST endpoints, scheduled tasks, database access, packaging.
 
-**Folder structure:**
-```
-/project/
-├── public/ (index.php, front-end files)
-├── app/
-│   ├── controllers/ (request handlers)
-│   ├── models/ (data classes)
-│   ├── repositories/ (database queries)
-│   ├── services/ (business logic)
-│   └── config.php
-├── views/ (HTML templates)
-├── migrations/ (DB schema changes)
-├── tests/
-└── .env.example
-```
+**First proof:** plugin activates cleanly and one useful vertical slice works in WordPress.
 
-**Skills to load:**
-- `architecture-canvas` (to design the MVC structure)
-- `database-design` (schema)
-
-**What NOT to do:**
-- Don't mix HTML and SQL in one file
-- Don't add a framework "because it's standard"
-- Don't put business logic in controllers
-
-**First build slice:**
-- Index page loads
-- One CRUD operation works (create or read)
-- Database connection verified
+**Avoid:** abstracting away WordPress conventions, inventing extra infrastructure, or adding custom tables by default.
 
 ---
 
-## Type 3: TypeScript Automation
+## Preset 2: PHP Web Interface
 
-**When:** Project type in PROJECT-INTAKE.md is "TypeScript automation"
+**Strong fit when:** server-rendered PHP owns requests and UI outside WordPress.
 
-**Architecture:**
-- Node.js script or CLI tool
-- Config file (JSON or .env)
-- Logging (console or file)
-- Dry-run mode (preview, don't execute)
-- Error handling with retry
-- Graceful failure
+**Typical shape:** thin request/controller layer, service/business logic, repository/data access when persistence exists, templates/views separated from queries.
 
-**Database:**
-- SQLite (if local processing needed)
-- JSON file (if config-like data)
-- No database if stateless
+**Storage:** choose MySQL/MariaDB, SQLite, or none from deployment/data evidence.
 
-**Folder structure:**
-```
-/project/
-├── src/
-│   ├── index.ts (entry point)
-│   ├── config.ts (settings, env vars)
-│   ├── tasks/ (individual tasks)
-│   ├── utils/ (helpers)
-│   └── types/ (type definitions)
-├── bin/ (CLI wrapper)
-├── tests/
-├── .env.example
-└── package.json
-```
-
-**Skills to load:**
-- `stack-selector` (Node.js + TypeScript)
-- `api-design` (if calling external APIs)
-
-**What NOT to do:**
-- Don't hard-code configuration
-- Don't ignore errors silently
-- Don't skip logging
-
-**First build slice:**
-- Script runs without error
-- Config file loads
-- One task completes successfully
-- Logs are written
+**First proof:** one request-to-output or CRUD vertical slice works end to end.
 
 ---
 
-## Type 4: Python Automation
+## Preset 3: TypeScript / Node Automation
 
-**When:** Project type in PROJECT-INTAKE.md is "Python automation"
+**Strong fit when:** a CLI, worker, script, or event-driven Node process is the main runtime.
 
-**Architecture:**
-- Script or CLI (Click/Typer for larger tools)
-- Config file (JSON, YAML, or .env)
-- Logging (file and/or console)
-- Dry-run mode
-- Error handling and retry logic
-- Can run unattended or manual trigger
+**Typical shape:** explicit config, typed boundaries, logging, dry-run for mutation, focused tasks/services, retries around external dependencies.
 
-**Database:**
-- SQLite (if persistent state needed)
-- JSON or pickle (if temporary state)
-- No database if stateless
+**Storage:** none, files, SQLite, or an external database according to state requirements.
 
-**Folder structure:**
-```
-/project/
-├── main.py (entry point)
-├── tasks/ (individual operations)
-├── utils/ (helpers)
-├── config.py (settings)
-├── logs/ (output)
-├── tests/
-├── .env.example
-└── requirements.txt
-```
-
-**Skills to load:**
-- `stack-selector` (Python + specific library)
-- `api-design` (if calling external APIs)
-
-**What NOT to do:**
-- Don't hard-code credentials or API keys
-- Don't skip error handling
-- Don't assume files exist
-
-**First build slice:**
-- Script runs and produces one output
-- Logging works
-- One retry or error case handled
-- Config file loads
+**First proof:** one task completes with observable output and a handled failure case.
 
 ---
 
-## Type 5: Scraping Pipeline
+## Preset 4: Python Automation
 
-**When:** Project type in PROJECT-INTAKE.md is "Scraping pipeline"
+**Strong fit when:** Python libraries and scripting/data tooling are the main execution environment.
 
-**Architecture:**
-- Pipeline stages: Fetch → Parse → Normalize → Validate → Store → Export
-- Adapter pattern for different page types or APIs
-- Envelope pattern (carry context through stages)
-- Factory pattern for strategy selection
-- Error handling: log loudly, don't skip
-- Rate limiting and retry logic
-- Validation before storage
+**Typical shape:** CLI/script entry point, configuration, logging, focused operations, explicit error/retry behaviour, unattended-safe execution when required.
 
-**Database:**
-- SQLite (local cache, persistent results)
-- CSV/JSON export (for delivery or next stage)
-- API destination (Airtable, Zapier, webhook)
+**Storage:** none, files, SQLite, or external persistence according to the system model.
 
-**Folder structure:**
-```
-/scraper/
-├── main.py (orchestration)
-├── fetcher.py (HTTP requests, Playwright)
-├── parser.py (HTML/JSON parsing)
-├── normalizer.py (data cleaning)
-├── validator.py (data validation)
-├── storage.py (DB or file writes)
-├── adapters/ (service-specific configs)
-├── output/ (generated files)
-├── logs/
-├── config.py
-├── requirements.txt
-└── .env.example
-```
-
-**Skills to load:**
-- `scraping-pipeline` (mandatory)
-- `database-design` (if using SQLite)
-
-**What NOT to do:**
-- Don't scrape without checking ToS
-- Don't ignore rate limits
-- Don't discard data on validation error — log it
-- Don't hard-code URLs
-
-**First build slice:**
-- Fetch one URL → parse → write to CSV
-- Logging shows what happened
-- One error case handled gracefully
-- Retry works
+**First proof:** one operation produces the required output and preserves useful state across one failure/retry when persistence matters.
 
 ---
 
-## Type 6: API Service
+## Preset 5: Scraping / Ingestion Pipeline
 
-**When:** Project type in PROJECT-INTAKE.md is "API service"
+**Strong fit when:** data moves through acquisition, extraction, quality control, normalisation, persistence, and delivery responsibilities.
 
-**Architecture:**
-- REST (or specified protocol)
-- Request validation (Pydantic for FastAPI, Zod for Express)
-- Service layer for business logic
-- Repository layer for data access
-- Error handling with consistent response format
-- Logging of requests and errors
-- Rate limiting and authentication
+**Candidate responsibilities:** schedule/queue → fetch → parse → validate → transform → load → monitor.
 
-**Database:**
-- PostgreSQL or MySQL for relational data
-- No database if stateless
+These are responsibilities, not mandatory files or processes. Combine them for a small scraper; separate them only when scale, failure isolation, reuse, or concurrency justifies it.
 
-**Folder structure (Python/FastAPI):**
-```
-/api/
-├── main.py (FastAPI app, routes)
-├── routes/ (endpoint handlers)
-├── services/ (business logic)
-├── repositories/ (database queries)
-├── models/ (Pydantic schemas)
-├── config.py
-├── migrations/ (Alembic or equivalent)
-├── tests/
-├── requirements.txt
-└── .env.example
-```
+**Common capability composition:** HTTP APIs + Playwright/browser automation + provider adapters + persistent job state + dedupe/idempotency + retry/backoff + cost/rate controls + export/reporting.
 
-**Skills to load:**
-- `api-design` (mandatory)
-- `database-design` (if database needed)
+**First proof:** one source produces one validated, repeatable record without losing state on rerun.
 
-**What NOT to do:**
-- Don't trust user input
-- Don't return database errors to clients
-- Don't skip validation
-
-**First build slice:**
-- One endpoint works (GET or POST)
-- Request validation works
-- Error response is formatted correctly
-- Basic auth or API key works
+**Avoid:** paid enrichment before dedupe, blind inserts, silent validation loss, uncontrolled retries, and treating fallback providers as unrelated scripts.
 
 ---
 
-## Type 7: Dashboard / Reporting Interface
+## Preset 6: API Service
 
-**When:** Project type in PROJECT-INTAKE.md is "Dashboard / reporting interface"
+**Strong fit when:** other software consumes a stable network contract.
 
-**Architecture:**
-- Owner mode first (KPI tiles, key metrics)
-- Analyst mode second (tables, filters, exports)
-- Data loading from database or API
-- No stored state (stateless)
-- Simple, fast response
+**Typical shape:** request validation, route/transport layer, services, repositories when persistence exists, consistent errors, auth/rate controls when required.
 
-**Database:**
-- Read-only connection (if needed)
-- Reports from existing data store
-- No write operations from UI
-
-**Folder structure (Python/Streamlit):**
-```
-/dashboard/
-├── app.py (Streamlit entry)
-├── pages/ (multi-page sections)
-├── data/ (loaders, transformers)
-├── components/ (chart functions)
-├── config.py
-└── requirements.txt
-```
-
-**Skills to load:**
-- `interface-design` (mandatory)
-- `database-design` (if custom queries needed)
-
-**What NOT to do:**
-- Don't hard-code data
-- Don't force analyst mode before owner mode
-- Don't forget to cache slow queries
-
-**First build slice:**
-- One KPI tile displays correctly
-- Data refreshes on reload
-- One table or chart works
+**First proof:** one endpoint validates input, produces the contract, and handles one failure correctly.
 
 ---
 
-## Type 8: Networking / Monitoring Tool
+## Preset 7: Dashboard / Reporting Interface
 
-**When:** Project type in PROJECT-INTAKE.md is "Networking / monitoring script"
+**Strong fit when:** the primary outcome is human-readable decision support.
 
-**Architecture:**
-- Observe mode first (read-only, log findings)
-- Active mode second (make changes, with confirmation)
-- Dry-run before execution
-- Rollback / fallback always available
-- Log every action
-- Never destroy without explicit confirmation
+**Typical shape:** read/data-loading boundary, transformations, owner-first KPIs, analyst detail second, caching only where evidence shows need.
 
-**Database:**
-- SQLite (for state, cache, history)
-- JSON (for config and logs)
-
-**Folder structure:**
-```
-/tool/
-├── main.py
-├── observe.py (read-only operations)
-├── actions.py (state-changing operations)
-├── config.py (settings)
-├── logs/
-├── requirements.txt
-└── .env.example
-```
-
-**Skills to load:**
-- `stack-selector` (Python + specific library)
-
-**What NOT to do:**
-- Don't skip confirmation before active mode
-- Don't destroy existing state without backup
-- Don't operate without logging
-- Don't assume network is reliable
-
-**First build slice:**
-- Script runs in observe mode
-- Reports what it would do
-- Doesn't change anything yet
+**First proof:** one trusted KPI and its source data can be traced and refreshed.
 
 ---
 
-## Type 9: Local AI / Workflow Tool
+## Preset 8: Networking / Monitoring Tool
 
-**When:** Project type in PROJECT-INTAKE.md is "Local AI / workflow tool"
+**Strong fit when:** the system observes or changes machines, processes, networks, or runtime state.
 
-**Architecture:**
-- Simple interface (Obsidian plugin, local server, web UI)
-- Markdown or JSON storage
-- State in local files
-- Optional: local LLM or API integration
-- CLI or simple server
+**Typical shape:** observe/read-only mode first, explicit active mode, dry-run, complete logging, rollback/fallback for mutation.
 
-**Database:**
-- File-based (Markdown, JSON)
-- SQLite (if structured data needed)
-
-**Folder structure:**
-```
-/tool/
-├── main.py or index.ts
-├── storage/ (load/write files)
-├── ai/ (LLM integration)
-├── ui/ (interface)
-├── config.py
-└── .env.example
-```
-
-**Skills to load:**
-- `stack-selector` (language + framework)
-- `api-design` (if calling external AI)
-
-**What NOT to do:**
-- Don't break the user's existing files
-- Don't assume file paths
-- Don't forget undo/recovery
-
-**First build slice:**
-- Reads local file
-- Processes it
-- Writes output
-- No data loss
+**First proof:** observe mode reports useful truth without changing state.
 
 ---
 
-## Summary Table
+## Preset 9: Local AI / Workflow Tool
 
-| Type | Primary database | Pattern | First build slice |
-|------|------------------|---------|-------------------|
-| WordPress plugin | MySQL/MariaDB | OOP classes, hooks | Activate, create table, show one KPI |
-| PHP web interface | MySQL/MariaDB or SQLite | MVC, repository | Index page, one CRUD operation |
-| TypeScript automation | SQLite or none | Config, logging, dry-run | Run and log, config loads |
-| Python automation | SQLite or none | Config, logging, dry-run | Run one task, log output |
-| Scraping pipeline | SQLite + CSV/JSON | Pipeline + adapters | Fetch → parse → export |
-| API service | PostgreSQL or MySQL | REST routes, services | One endpoint works, validation passes |
-| Dashboard | Read-only source | Owner mode first | One KPI tile displays |
-| Networking tool | SQLite or file | Observe mode first | Read-only run, log findings |
-| Local AI tool | File-based | Simple storage | Read, process, write |
+**Strong fit when:** a local workflow, files, or user-driven AI process is the product boundary.
+
+**Typical shape:** simple interface, explicit local storage ownership, provider/model adapter only when needed, recoverable file writes.
+
+**First proof:** read → process → write one useful result without data loss.
 
 ---
 
-## Decision Flow for AI
+## Hybrid example: prospecting pipeline
 
-1. **Read PROJECT-INTAKE.md Q3.**
-2. **Find your type in this file.**
-3. **Use the database choice from the table.**
-4. **Use the folder structure.**
-5. **Load only the relevant skills listed.**
-6. **Build the first slice first.**
-7. **Never deviate from the pattern without asking.**
+A commercial prospecting system might be:
+
+```text
+primary shape: scraping / ingestion pipeline
+capabilities:
+  - Google Places API
+  - browser automation fallback
+  - HTML parsing
+  - persistent crawl/job state
+  - deduplication before paid enrichment
+  - email enrichment adapter
+  - provider budget caps
+  - retry/backoff/circuit breaker
+  - CSV/CRM export
+confidence: 0.76
+```
+
+That is not a failure to classify. It is a more accurate system model than forcing the whole product into `Python automation` or `Scraping pipeline` and inheriting an arbitrary database/folder structure.
+
+## Final rule
+
+**Infer responsibilities before implementation. Presets accelerate known work; capability composition handles unfamiliar work. Never let a label replace evidence.**

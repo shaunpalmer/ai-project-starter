@@ -1,28 +1,27 @@
-# PROJECT-INTAKE.md — 5-Minute Project Brief
+# PROJECT-INTAKE.md — Natural-Language Project Brief
 
-> Fill the 5 core questions. That's enough for the AI to classify and route.
-> Everything else, the AI infers from SHAUN_DEV_PROFILE.md and PROJECT-TYPES.md — or asks you.
-> Do NOT over-answer. Five answers, three minutes, hand it off.
-
----
-
-## CORE — Answer these 5 (mandatory)
-
-### 1. One-line pitch + commercial reason
-
-```
-[Name] is a [project type] that [does what] for [who].
-Commercial point: (generate / capture / convert / track leads — or — automate / protect / report)
-```
-
-> Example: "MotelScraper is a scraping pipeline that extracts NAP + email from directory sites to build a cold-outreach lead list. Commercial point: generate leads."
+> Give the AI the outcome, first useful slice, and hard constraints. A natural-language prompt is enough to begin discovery.
+> Do not force an unfamiliar system into a single project type before the system has been modelled.
 
 ---
 
-### 2. Project type — mark ONE
+## CORE — Answer these 5
 
-This routes everything (pattern, database, structure, skills). See PROJECT-TYPES.md.
+### 1. Outcome + commercial reason
 
+Describe what should exist, who benefits, and why it matters.
+
+```text
+[Name] should [outcome] for [user/business].
+Commercial point: generate / capture / convert / track leads — or automate / protect / report / other.
+```
+
+### 2. Initial shape hint
+
+Choose a hint only if obvious. The AI may revise it after discovery.
+
+- [ ] infer from evidence
+- [ ] hybrid / crosses several capabilities
 - [ ] WordPress plugin
 - [ ] PHP web interface
 - [ ] TypeScript / Node automation
@@ -32,67 +31,47 @@ This routes everything (pattern, database, structure, skills). See PROJECT-TYPES
 - [ ] Dashboard / reporting
 - [ ] Networking / monitoring tool
 - [ ] Local AI / workflow tool
+- [ ] other: __________
 
----
+A hint is not an architecture decision. `PROJECT-TYPES.md` contains reusable presets, not mandatory boxes.
 
-### 3. First slice — the one thing it must do first
+### 3. First useful slice
 
-```
-The first working slice: ___________
-```
-
-> Example: "Fetch one directory page, extract business name + phone + email, write to CSV."
-
----
-
-### 4. Stack — confirm or override the default
-
-The project type has a default stack (see PROJECT-TYPES.md). Override only if needed.
-
-```
-Use default for this type:  [ ] yes
-Or override:                Backend ______  Frontend ______  Storage ______
+```text
+The first observable working outcome: ___________
 ```
 
----
+Example: "Given one directory URL, collect business name + phone, normalise it, and persist one idempotent record."
 
-### 5. Done — when is it finished?
+### 4. Known constraints
 
+Use defaults only after the system model supports them.
+
+```text
+Runtime/language: known ______ / infer
+Storage: known ______ / infer
+Providers/integrations: ______
+Must run on: ______
+Must not use / spend / mutate: ______
 ```
+
+### 5. Done condition
+
+```text
 Done means: [user] can [action] and [outcome], without [pain].
 ```
 
-> Example: "Done means: I run one command and get a deduped CSV of motel leads, without visiting any site manually."
-
 ---
 
-## OPTIONAL — Only if the AI would otherwise guess wrong
+## Discovery handoff
 
-Skip anything obvious. Fill only what matters for *this* project.
+After intake, the AI must:
 
-```
-External integrations:   (GA4, Twilio, Stripe, CRM, none)
-Auth / users:            (none / single / team / public)
-Hard constraints:        (deadline, must-run-on, must-not-use)
-Data volume:             (tiny / moderate / large)
-```
+1. Build `00-PLANNING/SYSTEM-MODEL.md` from evidence.
+2. Identify a primary shape plus capability composition and confidence.
+3. Draft `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`.
+4. Run a bounded proof when a material internal choice is uncertain.
+5. Ask Shaun only when the Decision Rights Contract assigns the consequential choice to him.
+6. Move to execution only when all eight Alignment Ladder gates are `YES`, the system model is confirmed, and the architecture hypothesis is accepted.
 
----
-
-## Handoff
-
-When the 5 core questions are answered, paste to the AI:
-
-```
-I've filled PROJECT-INTAKE.md. Read AGENTS.md, classify the project
-from PROJECT-TYPES.md, and plan. Ask me only what you can't infer.
-Do not write code until the 5 gates are cleared.
-```
-
----
-
-## Rule of Thumb (too much vs not enough)
-
-- **Not enough:** "build me a scraper" → AI guesses → spaghetti.
-- **Too much:** 15 questions + 5 docs to read first → you lose an hour, AI drowns.
-- **Right:** type + commercial point + first slice + stack + done. The AI infers the rest from your profile.
+`UNKNOWN` means investigate. It does not mean hand routine engineering back to Shaun.

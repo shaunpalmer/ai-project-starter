@@ -7,9 +7,31 @@ import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(SCRIPT_DIR, '..');
+const TASK_SCHEMA_VERSION = 2;
 const ANSWERS = new Set(['YES', 'NO', 'UNKNOWN']);
 const TASK_STATUSES = new Set(['blocked', 'ready', 'in_progress', 'completed']);
-const BLOCKING_GATES = ['destination', 'evidence', 'boundaries', 'ownership', 'minimum_slice', 'debt_control', 'proof'];
+const BLOCKING_GATES = [
+  'destination',
+  'evidence',
+  'system_model',
+  'boundaries',
+  'ownership',
+  'minimum_slice',
+  'debt_control',
+  'proof',
+];
+const DISCOVERY_ARTIFACTS = [
+  {
+    path: '00-PLANNING/SYSTEM-MODEL.md',
+    marker: 'MODEL_STATUS: CONFIRMED',
+    headings: ['Goal', 'Inputs', 'Outputs', 'Capabilities', 'Data flow', 'State and persistence', 'Failure boundaries', 'Invariants', 'Unknowns', 'Evidence'],
+  },
+  {
+    path: '00-PLANNING/ARCHITECTURE-HYPOTHESIS.md',
+    marker: 'HYPOTHESIS_STATUS: ACCEPTED',
+    headings: ['Primary shape', 'Capabilities', 'Candidate patterns', 'Assumptions', 'Alternatives considered', 'Bounded proof', 'Proposed architecture', 'Approval evidence'],
+  },
+];
 
 function parseArgs(argv) {
   const result = { _: [] };
@@ -103,6 +125,10 @@ function resume() {
     next_action: extractHeadingBody(currentState, 'Next action'),
     active_task: task,
     active_decisions: listActiveDecisions(),
+    discovery: DISCOVERY_ARTIFACTS.map((artifact) => ({
+      path: artifact.path,
+      status: readText(artifact.path, false).includes(artifact.marker) ? 'confirmed' : 'draft-or-missing',
+    })),
     git: gitFacts(),
   };
   console.log(JSON.stringify(output, null, 2));
@@ -113,7 +139,9 @@ function verifyAlignment(task, failures) {
     failures.push('Active task state is missing.');
     return;
   }
-  if (task.schema_version !== 1) failures.push('Active task requires schema_version: 1.');
+  if (task.schema_version !== TASK_SCHEMA_VERSION) {
+    failures.push(`Active task requires schema_version: ${TASK_SCHEMA_VERSION}.`);
+  }
   for (const field of ['id', 'goal', 'status']) {
     if (typeof task[field] !== 'string' || !task[field].trim()) {
       failures.push(`Active task requires a non-empty ${field}.`);
@@ -143,6 +171,24 @@ function verifyAlignment(task, failures) {
     if (typeof gate.evidence !== 'string' || !gate.evidence.trim()) failures.push(`Alignment gate ${requiredGate} requires evidence.`);
     if (['ready', 'in_progress', 'completed'].includes(task.status) && gate.answer !== 'YES') {
       failures.push(`${task.status} task has blocking ${gate.answer} gate: ${requiredGate}`);
+    }
+  }
+}
+
+function verifyDiscoveryArtifacts(task, failures) {
+  if (!task || !['ready', 'in_progress', 'completed'].includes(task.status)) return;
+  for (const artifact of DISCOVERY_ARTIFACTS) {
+    const content = readText(artifact.path, false);
+    if (!content) {
+      failures.push(`Missing discovery artifact: ${artifact.path}`);
+      continue;
+    }
+    if (!content.includes(artifact.marker)) {
+      failures.push(`${artifact.path} requires ${artifact.marker} before execution.`);
+    }
+    for (const heading of artifact.headings) {
+      const body = extractHeadingBody(content, heading);
+      if (!body) failures.push(`${artifact.path} requires a non-empty ## ${heading} section.`);
     }
   }
 }
@@ -183,6 +229,7 @@ function verify() {
   let task = null;
   try { task = readJson('.harness/state/active-task.json'); } catch (error) { failures.push(error.message); }
   verifyAlignment(task, failures);
+  verifyDiscoveryArtifacts(task, failures);
   verifyDecisions(failures);
   if (failures.length > 0) {
     console.error(`Project-control verification failed:\n- ${failures.join('\n- ')}`);
@@ -230,7 +277,6 @@ function decision(args) {
   console.log(JSON.stringify({ kind: args.kind, owner: selected[0], action: selected[1] }, null, 2));
 }
 
-// Resolve existing symlinks while retaining a not-yet-created suffix.
 function canonicalPath(candidate) {
   try {
     return fs.realpathSync(candidate);
@@ -276,6 +322,7 @@ function projectLayout(type, slug, projectDestination, deployDestination) {
     decisions: path.join('docs', 'decisions'),
     source: isWordPressPlugin ? path.join('src', slug) : 'src',
     tests: 'tests',
+    scripts: 'scripts',
     build: 'build',
     distribution: 'dist',
   };
@@ -302,8 +349,12 @@ function projectLayout(type, slug, projectDestination, deployDestination) {
           archive_root: null,
           ship_from: relative.build,
         },
-    next_action: `Open ${projectDestination} as the VS Code workspace; plan in ${relative.planning} and write product code only in ${relative.source}.`,
+    next_action: `Open ${projectDestination} as the VS Code workspace; model the system in ${relative.planning} before locking architecture or writing product code in ${relative.source}.`,
   };
+}
+
+function generatedReadinessScript() {
+  return `#!/usr/bin/env node\n\nimport fs from 'node:fs';\nimport path from 'node:path';\nimport { fileURLToPath } from 'node:url';\n\nconst ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');\nconst GATES = ${JSON.stringify(BLOCKING_GATES)};\nconst task = JSON.parse(fs.readFileSync(path.join(ROOT, '.harness/state/active-task.json'), 'utf8'));\nconst failures = [];\n\nif (task.schema_version !== ${TASK_SCHEMA_VERSION}) failures.push('active-task.json requires schema_version ${TASK_SCHEMA_VERSION}');\nif (!['blocked', 'ready', 'in_progress', 'completed'].includes(task.status)) failures.push('invalid task status');\nconst gates = new Map(Array.isArray(task.alignment) ? task.alignment.map((gate) => [gate.gate, gate]) : []);\nfor (const name of GATES) {\n  const gate = gates.get(name);\n  if (!gate) failures.push('missing gate: ' + name);\n  else if (['ready', 'in_progress', 'completed'].includes(task.status) && gate.answer !== 'YES') failures.push('blocking gate: ' + name);\n  else if (!String(gate.evidence ?? '').trim()) failures.push('missing evidence: ' + name);\n}\nconst artifacts = [\n  ['00-PLANNING/SYSTEM-MODEL.md', 'MODEL_STATUS: CONFIRMED'],\n  ['00-PLANNING/ARCHITECTURE-HYPOTHESIS.md', 'HYPOTHESIS_STATUS: ACCEPTED'],\n];\nif (['ready', 'in_progress', 'completed'].includes(task.status)) {\n  for (const [relativePath, marker] of artifacts) {\n    const absolutePath = path.join(ROOT, relativePath);\n    if (!fs.existsSync(absolutePath)) failures.push('missing artifact: ' + relativePath);\n    else if (!fs.readFileSync(absolutePath, 'utf8').includes(marker)) failures.push(relativePath + ' requires ' + marker);\n  }\n}\nif (failures.length) {\n  console.error('Project readiness failed:\\n- ' + failures.join('\\n- '));\n  process.exit(1);\n}\nconsole.log('Project readiness passed.');\n`;
 }
 
 function projectGuidanceFiles(project, layout) {
@@ -319,8 +370,20 @@ This is the canonical product project. The reusable starter created it, but prod
 1. Read \`docs/NORTH-STAR.md\`.
 2. Read \`docs/CURRENT-STATE.md\`.
 3. Read \`.harness/project.json\` and \`.harness/state/active-task.json\`.
-4. Complete \`00-PLANNING/PROJECT-INTAKE.md\` and the design envelope before coding.
-5. Inspect relevant source, tests, decisions, and Git history.
+4. Read or complete \`00-PLANNING/PROJECT-INTAKE.md\`.
+5. Build \`00-PLANNING/SYSTEM-MODEL.md\` from evidence before selecting architecture.
+6. Draft \`00-PLANNING/ARCHITECTURE-HYPOTHESIS.md\`; use presets as evidence, not as law.
+7. Inspect relevant source, tests, accepted decisions, dependencies, and Git history.
+8. Run \`node scripts/project-ready.mjs\` before product execution.
+
+## Infer before implement
+
+A natural-language project prompt is a valid starting point. Do not force an unfamiliar or hybrid system into one preset prematurely.
+
+- Infer a primary project shape only after modelling inputs, outputs, capabilities, state, failure boundaries, invariants, and unknowns.
+- Record capability composition such as scraping + browser automation + API integration + persistent state when the work crosses categories.
+- If confidence is low, inspect evidence or run a bounded proof. UNKNOWN means investigate; it does not mean ask Shaun to program the architecture for you.
+- Architecture, language, framework, database, provider, cost, security boundary, merge, deployment, and release remain Shaun-owned consequential decisions.
 
 ## Folder ownership
 
@@ -334,8 +397,7 @@ This is the canonical product project. The reusable starter created it, but prod
 ## Development behaviour
 
 - Make routine, reversible implementation decisions autonomously and prove them.
-- Ask Shaun only about purpose, architecture, language, framework, database, providers, material cost, security boundaries, scope pivots, destructive actions, merges, deployments, or releases.
-- Do not start product code until all seven Alignment Ladder gates are \`YES\`.
+- Do not start product code until all eight Alignment Ladder gates are \`YES\`, the system model is confirmed, and the architecture hypothesis is accepted.
 - Reconcile current state, decisions, tests, and implementation at meaningful checkpoints.
 - Never merge, deploy, publish, spend credits, or mutate production without explicit approval.
 `,
@@ -343,15 +405,17 @@ This is the canonical product project. The reusable starter created it, but prod
 
 Project: ${project.name}
 Slug: \`${project.slug}\`
-Type: \`${project.type}\`
+Initial type hint: \`${project.type}\`
+
+A natural-language brief is enough to begin discovery. Do not guess architecture from the type hint.
 
 Complete these five items before execution:
 
-1. **Purpose and commercial reason:**
-2. **Confirmed project type:**
-3. **First useful working slice:**
-4. **Default stack or explicit override:**
-5. **Done condition:**
+1. **Purpose and commercial reason:** What outcome matters and for whom?
+2. **Initial shape hint:** Known preset, \`infer\`, or \`hybrid\`. This is a starting clue, not an architecture decision.
+3. **First useful working slice:** What is the smallest observable outcome worth proving?
+4. **Known constraints:** Runtime, language, storage, providers, cost limits, deployment, or \`infer from evidence\`.
+5. **Done condition:** What can the user do when this slice is finished, and what pain is removed?
 
 Optional only when the agent would otherwise guess incorrectly:
 
@@ -359,7 +423,93 @@ Optional only when the agent would otherwise guess incorrectly:
 - Users or authentication:
 - Hard constraints:
 - Data volume:
+- Existing system that must be preserved:
 `,
+    '00-PLANNING/SYSTEM-MODEL.md': `# System Model
+
+MODEL_STATUS: DRAFT
+
+Change to \`MODEL_STATUS: CONFIRMED\` only when each section is evidence-backed and remaining unknowns are either non-blocking or assigned under decision rights.
+
+## Goal
+
+Describe the outcome without prescribing implementation.
+
+## Inputs
+
+List data, commands, events, files, users, or external sources entering the system.
+
+## Outputs
+
+List observable outputs and delivery destinations.
+
+## Capabilities
+
+List capabilities the system needs. Compose them freely: scraping, browser automation, API integration, persistence, scheduling, UI, reporting, queues, enrichment, etc.
+
+## Data flow
+
+Describe how information moves from input to output. Do not name classes yet.
+
+## State and persistence
+
+What must survive retries, crashes, reruns, or sessions? What must be idempotent?
+
+## Failure boundaries
+
+List external failures, partial-success cases, retry boundaries, fallback routes, and stop conditions.
+
+## Invariants
+
+State facts that must remain true regardless of implementation route.
+
+## Unknowns
+
+Record unresolved technical questions and whether each needs inspection, a bounded proof, or Shaun's consequential approval.
+
+## Evidence
+
+List repository files, documentation, experiments, provider facts, tests, or observed behaviour supporting the model.
+`,
+    '00-PLANNING/ARCHITECTURE-HYPOTHESIS.md': `# Architecture Hypothesis
+
+HYPOTHESIS_STATUS: DRAFT
+
+Promote to \`HYPOTHESIS_STATUS: ACCEPTED\` only after the system model is confirmed, credible alternatives are compared, bounded proof is run when needed, and Shaun has approved any consequential architecture choice.
+
+## Primary shape
+
+State the best current description: a known preset, hybrid composition, or custom shape. Include confidence.
+
+## Capabilities
+
+Map system-model capabilities to responsibilities. A capability does not automatically require its own class, process, service, or database.
+
+## Candidate patterns
+
+List only patterns that solve observed responsibilities or failure modes.
+
+## Assumptions
+
+List assumptions that could invalidate the route.
+
+## Alternatives considered
+
+Record credible alternatives and why they are weaker for this slice.
+
+## Bounded proof
+
+State the smallest experiment needed to resolve material uncertainty, plus the observed result.
+
+## Proposed architecture
+
+Describe components, boundaries, data ownership, storage, dependencies, and execution flow at the minimum useful level.
+
+## Approval evidence
+
+Record the consequential decision and Shaun's approval, or explain why the route is a routine/reversible implementation detail under the decision-right contract.
+`,
+    'scripts/project-ready.mjs': generatedReadinessScript(),
     'docs/NORTH-STAR.md': `# North Star
 
 ## Project purpose
@@ -371,6 +521,7 @@ To be completed from \`00-PLANNING/PROJECT-INTAKE.md\` before execution.
 - Product code remains inside \`${sourcePath}/\`.
 - Build and distribution output never becomes canonical source.
 - Consequential decisions remain with Shaun; routine development remains with Athena.
+- Unfamiliar work is modelled before architecture is locked.
 
 ## Success condition
 
@@ -382,17 +533,18 @@ Last verified: ${createdAt}
 
 ## Current truth
 
-The project lifecycle scaffold exists. No product implementation has started.
+The project lifecycle scaffold exists. No product implementation has started. The initial type is a hint only; system discovery comes first.
 
 ## Known boundaries
 
 - The intake and North Star are incomplete.
+- The system model and architecture hypothesis are drafts.
 - The active task remains blocked until every Alignment Ladder gate has evidence.
 - Project creation did not build, package, deploy, or publish anything.
 
 ## Next action
 
-Complete \`00-PLANNING/PROJECT-INTAKE.md\`, establish the North Star, and define the first useful slice.
+Complete the intake, confirm the system model, then produce an evidence-backed architecture hypothesis before writing product code.
 `,
   };
 }
@@ -403,6 +555,7 @@ function createProjectScaffold(projectDestination, project, layout) {
     layout.relative.decisions,
     layout.relative.source,
     layout.relative.tests,
+    layout.relative.scripts,
     path.join(layout.relative.harness, 'state', 'checkpoints'),
   ];
   const generatedDirectories = [layout.relative.build, layout.relative.distribution];
@@ -414,7 +567,6 @@ function createProjectScaffold(projectDestination, project, layout) {
   for (const relativePath of persistentDirectories) {
     fs.writeFileSync(path.join(projectDestination, relativePath, '.gitkeep'), '');
   }
-
   for (const relativePath of generatedDirectories) {
     fs.writeFileSync(path.join(projectDestination, relativePath, '.gitkeep'), '');
   }
@@ -455,12 +607,8 @@ function destination(args) {
     throw new Error('destination requires a lowercase kebab-case --slug.');
   }
   const workspaceInput = args['workspace-root'] ?? process.env.HARNESS_WORKSPACE_ROOT;
-  if (!workspaceInput) {
-    throw new Error('Provide --workspace-root or HARNESS_WORKSPACE_ROOT.');
-  }
-  if (typeof workspaceInput !== 'string' || !path.isAbsolute(workspaceInput)) {
-    throw new Error('Workspace root must be an absolute path.');
-  }
+  if (!workspaceInput) throw new Error('Provide --workspace-root or HARNESS_WORKSPACE_ROOT.');
+  if (typeof workspaceInput !== 'string' || !path.isAbsolute(workspaceInput)) throw new Error('Workspace root must be an absolute path.');
   if (args['deploy-root'] !== undefined && (typeof args['deploy-root'] !== 'string' || !path.isAbsolute(args['deploy-root']))) {
     throw new Error('Deployment root must be an absolute path.');
   }
@@ -472,7 +620,7 @@ function destination(args) {
   const deployDestination = args['deploy-root'] ? path.resolve(args['deploy-root'], slug) : null;
   assertSafeDestination(workspaceRoot, projectDestination, deployDestination);
   const name = String(args.name ?? slug).replace(/\s+/g, ' ').trim() || slug;
-  const type = args.type ?? 'unspecified';
+  const type = args.type ?? 'infer';
   const layout = projectLayout(type, slug, projectDestination, deployDestination);
   const result = {
     name,
@@ -491,9 +639,9 @@ function destination(args) {
     createProjectScaffold(projectDestination, result, layout);
     fs.writeFileSync(path.join(projectDestination, '.harness', 'project.json'), `${JSON.stringify({ schema_version: 1, ...result }, null, 2)}\n`, { flag: 'wx' });
     fs.writeFileSync(path.join(projectDestination, '.harness', 'state', 'active-task.json'), `${JSON.stringify({
-      schema_version: 1,
+      schema_version: TASK_SCHEMA_VERSION,
       id: 'project-intake',
-      goal: 'Complete intake and establish the first useful slice.',
+      goal: 'Model the system, establish an architecture hypothesis, and define the first useful slice.',
       status: 'blocked',
       alignment: BLOCKING_GATES.map((gate) => ({ gate, answer: 'UNKNOWN', evidence: 'Not established during project creation.' })),
     }, null, 2)}\n`, { flag: 'wx' });

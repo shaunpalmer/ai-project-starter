@@ -1,15 +1,16 @@
 {
-  "schema_version": 1,
-  "id": "project-lifecycle-layout",
-  "goal": "Give generated projects explicit planning, source, test, build, distribution, and deployment boundaries outside the harness.",
-  "status": "completed",
+  "schema_version": 2,
+  "id": "infer-before-implement",
+  "goal": "Make unfamiliar and hybrid projects model the system before architecture or implementation is locked in.",
+  "status": "blocked",
   "alignment": [
-    { "gate": "destination", "answer": "YES", "evidence": "PR #1 is merged; this second slice targets a focused project-lifecycle branch from the new main." },
-    { "gate": "evidence", "answer": "YES", "evidence": "The destination command, project-type layouts, ignore rules, current memory, and generated WordPress tree were inspected." },
-    { "gate": "boundaries", "answer": "YES", "evidence": "The slice scaffolds and documents project lifecycle ownership; it does not package, deploy, merge, or release." },
-    { "gate": "ownership", "answer": "YES", "evidence": "The harness is the factory, each project is the working root, src is canonical code, build is disposable, and dist is delivery output." },
-    { "gate": "minimum_slice", "answer": "YES", "evidence": "One type-aware scaffold extends the existing zero-dependency destination command without adding a build system." },
-    { "gate": "debt_control", "answer": "YES", "evidence": "Generated directories have single responsibilities, WordPress packaging rules are explicit, and project guidance travels with the scaffold." },
-    { "gate": "proof", "answer": "YES", "evidence": "Seven behavioural tests, control verification, a real temporary WordPress scaffold, and filesystem inspection passed on 2026-08-01." }
+    { "gate": "destination", "answer": "YES", "evidence": "Work is isolated on athena/infer-before-implement and targets only the reusable harness." },
+    { "gate": "evidence", "answer": "YES", "evidence": "AGENTS, project types/intake, supported controller, generated scaffold, skills, tests, CI workflow, and the 2026-09-05 harness review were inspected." },
+    { "gate": "system_model", "answer": "YES", "evidence": "00-PLANNING/SYSTEM-MODEL.md records the intent-to-system-model failure mode, state, boundaries, invariants, and proof target." },
+    { "gate": "boundaries", "answer": "YES", "evidence": "This slice strengthens discovery/readiness and generated-project handoff; it does not merge, deploy, release, spend credits, or mutate product projects." },
+    { "gate": "ownership", "answer": "YES", "evidence": "scripts/project-control.js remains the supported control plane; planning artifacts own discovery; generated projects receive a local readiness helper." },
+    { "gate": "minimum_slice", "answer": "YES", "evidence": "One schema/gate extension, two planning artifacts, preset-to-capability routing, generated-project verification, and focused regression proof address the observed failure without a new framework." },
+    { "gate": "debt_control", "answer": "YES", "evidence": "The change removes the supported unlock dependency on the known-broken legacy planning checker and leaves legacy experiments explicitly unsupported rather than expanding them." },
+    { "gate": "proof", "answer": "UNKNOWN", "evidence": "Implementation and regression cases are defined; PR CI on Node 20/22/24 must pass before this task can be marked completed." }
   ]
 }
