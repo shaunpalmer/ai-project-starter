@@ -1,33 +1,37 @@
 # Current State
 
 Last verified: 2026-09-09
-Verified against: `athena/infer-before-implement` / PR #4
-Verification: GitHub Actions run #4 passed Node 20, 22, and 24; each job passed 21 tests, `npm run control:verify`, and `npm run memory:resume`
+Working branch: `athena/engineering-defaults-v0.4`
+Verification: pending GitHub Actions for v0.4
 
 ## Current truth
 
-Harness v0.3 infer-before-implement is implemented and verified on PR #4. Natural-language intake can remain `infer` or hybrid; project types are presets rather than mandatory architecture. Schema v2 adds the `system_model` gate, and execution-ready work requires a confirmed system model plus accepted architecture hypothesis.
+Harness v0.3 is merged to `main`. v0.4 is now implementing the next layer: routine engineering defaults, automatic ecosystem skill binding, a consolidated WordPress Way, and deterministic version-control operations.
 
-Generated projects receive their own discovery templates and zero-dependency `scripts/project-ready.mjs`. The verifier checks exact status lines, so instructional text cannot accidentally satisfy a readiness marker. It also refuses execution while the task remains blocked.
+`ENGINEERING-DEFAULTS.md` defines the zero-routine-question policy, language/runtime defaults, architecture defaults, dependency/persistence/failure/testing rules, and version-control expectations. `docs/DECISION-RIGHTS.md` now distinguishes applying an established default from materially departing from one.
 
-The supported advisory unlock path now delegates to project-control verification and requires an execution-ready task instead of depending on the known-broken legacy planning checker.
+The WordPress skill has been consolidated into one authoritative rule set. The skill router automatically binds WordPress rules for confirmed WordPress work and scraping guidance for confirmed scraping/ingestion work instead of asking Shaun whether to activate obvious skills.
+
+`scripts/vcs-control.js` provides non-interactive Git status/preflight/init/branch/checkpoint/connect/push controls. It is designed to use existing machine authentication, stage only declared files, refuse protected branches/force-style behaviour, and fail explicitly instead of waiting for hidden terminal prompts.
 
 ## Working capabilities
 
-- Natural-language outcomes can begin discovery without Shaun pre-selecting architecture.
-- Hybrid capability composition is explicit and supported.
-- System state, failure boundaries, invariants, and unknowns are modelled before architecture.
-- Project presets still accelerate familiar WordPress/PHP/Python/TypeScript/API/dashboard work.
-- Generated projects carry discovery artifacts and a local readiness verifier.
-- Existing source/destination, decision-right, memory, checkpoint, and no-deploy boundaries remain intact.
-- Regression proof covers Node 20, 22, and 24.
+- Infer-before-implement discovery and eight readiness gates from v0.3.
+- Routine engineering question budget of zero.
+- WordPress -> PHP/The WordPress Way default behaviour.
+- Scraping/ingestion -> Python default unless stronger evidence overrides it.
+- General automation/runtime defaults with ecosystem precedence.
+- Deterministic Git local init and safe work-branch creation.
+- Focused checkpoint commits with explicit file lists.
+- Existing-credential remote verification and safe feature-branch push policy.
 
 ## Known boundaries
 
-- Legacy experimental router/writer/orchestrator scripts remain in the repository but are unsupported.
-- Structural gates cannot prove semantic evidence is truthful; review and runtime evidence still matter.
-- Merge, deployment, provider use, and release remain Shaun-owned actions.
+- v0.4 proof is not complete until the full CI matrix passes.
+- The new VCS controller does not create/delete remote GitHub repositories, force push, merge, deploy, or release.
+- Generated-project handoff of v0.4 defaults/VCS controls is a follow-up integration step after the controller proof is green.
+- Legacy experimental scripts, including the old interactive git checkpoint helper, remain unsupported unless deliberately retired/replaced in a later cleanup slice.
 
 ## Next action
 
-Shaun reviews PR #4. If he is satisfied with the change and green checks, he can approve the merge to `main`. After merge, use one deliberately unfamiliar/hybrid project as the first real-world acceptance trial and refine only from observed friction.
+Open the v0.4 pull request, run the full Node 20/22/24 Actions matrix, repair any regression in place, then reconcile the active task/current state to completed proof. After that, integrate the proven defaults/VCS controls into generated product-project scaffolds and add a representative WordPress/scraping/automation acceptance benchmark.
