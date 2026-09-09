@@ -1,225 +1,87 @@
-# Skill Router Output
+# SKILL: Skill Router
 
-The Skill Router must produce a Skill Load Plan before specialist work begins.
+## Purpose
 
-The plan must identify:
+Select the smallest specialist skill set from the confirmed system model and current phase. Do not choose skills from a project-type label alone.
 
-1. What project context was read
-2. What phase the agent is in
-3. Which skills are required
-4. Which skills are optional
-5. Which skills are explicitly excluded
-6. What execution pipeline applies
-7. What promotion gate must be passed before output is considered final
+## Inputs
 
----
+Read:
 
-# Skill Load Plan: [Phase Name]
+1. `PROJECT-INTAKE.md`
+2. `00-PLANNING/SYSTEM-MODEL.md`
+3. `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`
+4. active task / current phase
+5. relevant accepted decisions
 
-## 1. Project Context Ingestion
+## Routing method
 
-### Intake Assessment
+### 1. Identify capabilities
 
-Read `PROJECT-INTAKE.md`.
+Extract responsibilities from the system model, for example:
 
-Summarise:
+- WordPress runtime
+- scraping / parsing
+- browser automation
+- API integration
+- persistent state
+- database selection/design
+- interface design
+- testing
+- security
+- packaging/deployment
 
-* Project goal
-* Project type
-* User/business reason
-* First useful outcome
-* Any limits or constraints
+### 2. Separate required, conditional, and excluded skills
 
-### Type Constraints
+Load a skill only when a current responsibility or proof depends on it. Exclude unrelated skills explicitly to prevent context bloat and pattern mixing.
 
-Read `PROJECT-TYPES.md`.
+### 3. Respect phase
 
-Confirm:
+Planning/architecture may load rules needed to reason about a capability, but build/review/repair skills should activate only when there is an artifact or accepted hypothesis to work on.
 
-* Matching project type
-* Required architecture pattern
-* Expected stack/database direction
-* Relevant specialist skills
-* Skills that do not apply
+### 4. Define the promotion gate
 
-### Active Target
+Every skill load plan names:
 
-Read `TASKS.md`.
+- candidate artifact;
+- verification method;
+- failure evidence;
+- repair rule;
+- promotion condition.
 
-Identify:
-
-* Current task or first build slice
-* Expected output
-* Dependencies
-* Verification method if already listed
-
----
-
-## 2. Active Phase Identification
-
-Select one current operational phase:
-
-* `[ ]` Planning
-* `[ ]` Architecture
-* `[ ]` Build
-* `[ ]` Review
-* `[ ]` Repair
-* `[ ]` Documentation
-
-The phase determines which skills are loaded.
-
-Do not load build skills during planning unless planning requires their rules.
-
-Do not load review skills until there is an artifact, diff, or completed plan to review.
-
----
-
-## 3. Skill Allocation Matrix
-
-### Required Skills
-
-| Skill        | Why it is required  |
-| ------------ | ------------------- |
-| `skill-name` | Required because... |
-
-Required skills are loaded immediately because the current project type, phase, task, or blocker depends on them.
-
-### Optional Skills
-
-| Skill        | Activation condition |
-| ------------ | -------------------- |
-| `skill-name` | Load only if...      |
-
-Optional skills are not loaded unless their condition becomes true.
-
-### Excluded Skills
-
-| Skill        | Why it is excluded  |
-| ------------ | ------------------- |
-| `skill-name` | Excluded because... |
-
-Excluded skills are explicitly deactivated for this execution block to prevent context bloat, focus drift, and accidental pattern mixing.
-
----
-
-## 4. Execution Pipeline
-
-After routing skills, use this pipeline:
-
-```text
-route skills
-  ↓
-plan slice
-  ↓
-generate candidate
-  ↓
-verify artifact
-  ↓
-repair in place
-  ↓
-recheck
-  ↓
-promote only when checked
-```
-
-Generated work is only a candidate artifact until verification passes.
-
-The agent must not present candidate work as final.
-
----
-
-## 5. Promotion Gate
-
-Before output is considered final, define the promotion gate.
-
-| Item                | Answer                                |
-| ------------------- | ------------------------------------- |
-| Candidate artifact  | What will be produced?                |
-| Verification method | How will it be checked?               |
-| Failure evidence    | What error/log/output proves failure? |
-| Repair rule         | What should be repaired in place?     |
-| Promotion condition | What must pass before shipping?       |
-
-If no verification method exists, create the smallest useful one.
-
-Examples:
-
-* PHP syntax check
-* TypeScript compile check
-* Unit or smoke test
-* WordPress hook/load-order check
-* Browser render check
-* Accessibility scan
-* Database schema inspection
-* Exact source text comparison
-* Git diff review for accidental rewrites
-
----
-
-## 6. Skill Load Plan Template
+## Output template
 
 ```md
-# Skill Load Plan: [Phase Name]
+# Skill Load Plan
 
-## Project Type
+## System shape
+Primary shape: ...
+Confidence: ...
+Capabilities: ...
 
-[WordPress plugin / scraping pipeline / PHP tool / TypeScript automation / Python automation / API / dashboard / other]
+## Current phase
+...
 
-## Current Phase
-
-[Planning / Architecture / Build / Review / Repair / Documentation]
-
-## Active Target
-
-[Current task or first build slice from TASKS.md]
-
-## Required Skills
-
-| Skill | Why it is required |
+## Required skills
+| Skill | Evidence-backed reason |
 |---|---|
-| `wordpress-plugin` | Project type is WordPress plugin |
-| `database-selection` | Storage decision is required |
-| `complexity-brake` | New files/classes/tables are being proposed |
 
-## Optional Skills
-
-| Skill | Activation condition |
+## Conditional skills
+| Skill | Activate when |
 |---|---|
-| `interface-design` | Load if admin UI or frontend UI is part of this slice |
-| `testing-plan` | Load if verification is not already defined |
 
-## Excluded Skills
-
-| Skill | Why it is excluded |
+## Excluded skills
+| Skill | Why excluded |
 |---|---|
-| `scraping-pipeline` | Project is not scraping data |
-| `api-design` | No external/public API is planned yet |
 
-## Execution Pipeline
-
-route skills → plan slice → generate candidate → verify artifact → repair in place → recheck → promote only when checked
-
-## Promotion Gate
-
-| Item | Answer |
-|---|---|
-| Candidate artifact |  |
-| Verification method |  |
-| Failure evidence |  |
-| Repair rule | Repair existing files in place. Do not restart or rewrite unrelated files. |
-| Promotion condition |  |
-
-## Status
-
-`SKILLS_SELECTED`
+## Promotion gate
+Candidate artifact: ...
+Verification: ...
+Failure evidence: ...
+Repair rule: repair in place
+Promotion condition: ...
 ```
 
----
+## Final rule
 
-## Final Rule 
-
-The Skill Router does not do the specialist work.
-
-It chooses the right skills, excludes the wrong ones, defines the execution path, and names the promotion gate.
-
-Specialist skills do the work after routing is complete.
+**The router composes skills from responsibilities. Project presets are hints; the confirmed system model is the routing evidence.**

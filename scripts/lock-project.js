@@ -6,10 +6,15 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCK_FILE = path.join(ROOT, '.planning-lock');
+const TASK_FILE = path.join(ROOT, '.harness', 'state', 'active-task.json');
 
 function ensurePlanning() {
   try {
     execFileSync(process.execPath, ['scripts/project-control.js', 'verify'], { cwd: ROOT, stdio: 'inherit' });
+    const task = JSON.parse(fs.readFileSync(TASK_FILE, 'utf8'));
+    if (!['ready', 'in_progress', 'completed'].includes(task.status)) {
+      throw new Error(`Task is ${task.status}; execution is not ready.`);
+    }
     return true;
   } catch {
     return false;
@@ -34,7 +39,7 @@ function unlock() {
     console.log('🔓 Project control verified; advisory lock removed.');
   } else {
     console.log('❌ Project control incomplete. Unlock denied.');
-    console.log('   Resolve the Alignment Ladder and discovery artifacts first.');
+    console.log('   Confirm the system model, accept the architecture hypothesis, resolve all eight gates, and set the task ready.');
     process.exitCode = 1;
   }
 }

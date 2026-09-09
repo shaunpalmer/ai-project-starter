@@ -1,7 +1,7 @@
 {
   "name": "ai-project-starter",
-  "version": "0.2.0",
-  "description": "AI-assisted project planning harness with skills, planning gates, and execution controls.",
+  "version": "0.3.0",
+  "description": "AI-assisted project harness with infer-before-implement discovery, planning gates, and execution controls.",
   "main": "scripts/harness-init.js",
   "type": "module",
   "scripts": {
@@ -20,7 +20,7 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "keywords": ["ai", "agent", "harness", "planning", "skills"],
+  "keywords": ["ai", "agent", "harness", "planning", "discovery", "skills"],
   "author": "Shaun Palmer",
   "license": "MIT"
 }

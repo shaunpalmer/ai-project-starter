@@ -1,126 +1,73 @@
-# SKILL: Scraping Pipeline
+# SKILL: Scraping / Ingestion Pipeline
 
 ## Purpose
 
-Design and implement a reliable, polite, maintainable web scraping pipeline that handles rate limits, retries, schema changes, and data quality.
+Design reliable data acquisition and ingestion work from observed responsibilities rather than forcing every scraper into a fixed seven-file architecture.
 
-## When to Use
+## When to use
 
-- Building a new scraper for any target site
-- Redesigning a brittle existing scraper
-- Adding a new data source to an existing pipeline
+Use when the confirmed system model includes acquisition from websites/APIs plus extraction, validation, normalisation, persistence, enrichment, export, or monitoring responsibilities.
 
-## Inputs Required
+## Candidate responsibilities
 
-- [ ] Target URL(s) and data to extract
-- [ ] `DATA-FLOW.md` — where scraped data goes
-- [ ] `DATABASE.md` — schema for storing results
-- [ ] Legal/ToS check completed (document in `PRD.md`)
+A mature pipeline often contains some of these responsibilities:
 
-## Pipeline Stages
-
-```
-Scheduler → Fetcher → Parser → Validator → Transformer → Loader → Monitor
+```text
+schedule/queue → acquire → parse → validate → transform/normalise → dedupe → enrich → load → export → monitor
 ```
 
-### Stage 1 — Scheduler
+This is a responsibility map, not a mandatory class/process/file list. A one-site prototype may combine several steps. Separate them only when scale, retries, provider boundaries, testing, concurrency, cost control, or failure isolation justify it.
 
-Responsibilities:
-- Trigger scrape jobs on a schedule or event
-- Track which URLs are queued, in-flight, done, failed
-- Enforce crawl politeness (delay between requests)
+## Discovery questions the agent should answer from evidence
 
-Decisions:
-- [ ] Cron / queue-based / event-driven?
-- [ ] Crawl delay: _____ ms between requests to same domain
-- [ ] Robots.txt: respected? (document if not)
+- What are the sources and what data is required?
+- Is an official API preferable/available before scraping?
+- Which sources require JavaScript/browser rendering?
+- What state must survive crashes and reruns?
+- What uniquely identifies a record?
+- Where must dedupe occur before paid provider calls?
+- What are rate limits, budgets, retryable failures, and permanent failures?
+- What fallback path exists when a source/provider fails?
+- What observable counts prove pipeline health?
+- What legal/ToS/robots/privacy constraints apply?
 
-### Stage 2 — Fetcher
+## Useful patterns — only when the failure mode exists
 
-Responsibilities:
-- HTTP requests with retry and backoff
-- Header rotation / user-agent management
-- Proxy rotation (if required)
-- Render JavaScript (if required)
+- **Pipeline:** staged transforms with explicit contracts.
+- **Envelope:** carry source/job metadata beside payload data.
+- **Adapter:** isolate provider/page/API differences.
+- **Strategy:** select acquisition/enrichment approach at runtime.
+- **Retry + backoff:** transient timeout/429/network failure.
+- **Circuit breaker:** stop hammering a failing or budget-exhausted provider.
+- **Idempotent upsert:** safe reruns without duplicates.
 
-Retry strategy:
-```
-Attempt 1 → immediate
-Attempt 2 → 2s delay
-Attempt 3 → 8s delay
-Attempt 4 → 32s delay
-Give up → mark as failed, alert
-```
+## Cost and data-quality ordering
 
-Tool selection:
-| Need | Tool |
-|------|------|
-| Static HTML | httpx / requests / got |
-| JS rendering | Playwright / Puppeteer |
-| Anti-bot protection | Crawlee / Apify / residential proxy |
+Prefer cheap deterministic checks before paid or fragile work:
 
-### Stage 3 — Parser
-
-Responsibilities:
-- Extract structured data from raw HTML/JSON
-- Use CSS selectors or XPath (document which and why)
-- Never use regex on HTML — use a parser
-
-Schema:
-```
-Raw HTML → { field: value, field: value, ... }
+```text
+acquire → normalise → dedupe → validate → paid enrichment → persist/export
 ```
 
-Fragility note: Document the selectors used. When the site changes, this is what breaks first.
+The exact order may vary, but the architecture hypothesis must explain any paid call that occurs before dedupe/validation.
 
-### Stage 4 — Validator
+## First useful proof
 
-Responsibilities:
-- Validate each extracted field against expected types/ranges
-- Reject records that fail validation (don't silently drop fields)
-- Log validation failures with the source URL
+For a new pipeline, prove one vertical path end to end:
 
-```python
-# Example validation
-assert isinstance(price, float), f"Expected float, got {type(price)}"
-assert 0 < price < 1_000_000, f"Price out of range: {price}"
-```
+- acquire one representative source;
+- produce one validated normalised record;
+- persist/export it;
+- rerun without duplicating it;
+- demonstrate one handled failure/fallback;
+- record enough run evidence to diagnose failure.
 
-### Stage 5 — Transformer
+## Quality gate
 
-Responsibilities:
-- Normalise data (dates, currencies, strings)
-- Map to target schema from `DATABASE.md`
-- Handle deduplication logic
-
-### Stage 6 — Loader
-
-Responsibilities:
-- Upsert records (not blind insert — handle re-runs)
-- Write to store defined in `DATABASE.md`
-- Emit event on completion (for downstream consumers)
-
-Upsert key: document which field(s) uniquely identify a record.
-
-### Stage 7 — Monitor
-
-Responsibilities:
-- Track: records fetched / parsed / validated / loaded / failed per run
-- Alert on: >5% validation failure rate, zero records loaded, fetch error rate >10%
-- Store run metadata: start time, end time, record counts, errors
-
-## Output
-
-- Pipeline implementation in `src/scrapers/[target-name]/`
-- Schema additions in `DATABASE.md`
-- Data flow additions in `DATA-FLOW.md`
-
-## Quality Check
-
-- [ ] Legal/ToS documented
-- [ ] Robots.txt behaviour documented
-- [ ] Retry strategy implemented with backoff
-- [ ] Validation rejects bad records (doesn't silently drop fields)
-- [ ] Upsert key defined (pipeline is idempotent)
-- [ ] Monitor tracks failure rates and alerts
-- [ ] Selectors documented (so breakage is diagnosable)
+- source and data contract documented;
+- system model identifies persistent state and idempotency;
+- provider cost/rate limits have explicit guards when applicable;
+- retryable vs permanent failure is distinguishable;
+- validation failures are observable, not silently discarded;
+- selectors/adapters are diagnosable when page shape changes;
+- first useful proof passes before scale/concurrency is added.

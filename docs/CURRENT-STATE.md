@@ -1,33 +1,31 @@
 # Current State
 
-Last verified: 2026-08-01
-Verified against: `agent/project-control-memory` working tree
-Verification: `npm test` (7 passed), `npm run control:verify`, WordPress scaffold creation, and filesystem-tree inspection
+Last verified: 2026-09-09
+Verified against: `athena/infer-before-implement` implementation branch
+Verification: structural review complete; PR CI on Node 20/22/24 is the remaining proof gate
 
 ## Current truth
 
-The harness now has a unified project-control layer and a type-aware project lifecycle scaffold. It creates a separate canonical project, carries a small operating contract and memory starters into it, and tells the agent exactly where planning, product code, proof, assembly, distribution, and deployment belong.
+Harness v0.3 infer-before-implement is implemented on a focused branch. Natural-language intake can remain `infer` or hybrid; project types are presets rather than mandatory architecture. Schema v2 adds the `system_model` gate, and ready work requires confirmed system-model plus accepted architecture-hypothesis artifacts.
+
+Generated projects now receive their own discovery templates and zero-dependency readiness helper. The supported advisory unlock path delegates to project-control verification and requires an execution-ready task instead of depending on the known-broken legacy planning checker.
 
 ## Working capabilities
 
-- Five-question intake and planning documents already exist.
-- Project control can reconstruct a compact resume context from checked-in files.
-- Structured alignment state distinguishes `YES`, `NO`, and `UNKNOWN` with evidence.
-- Decision-right routing separates routine developer work from Shaun-owned consequential choices.
-- Destination preview/create separates canonical source from an optional deployment target.
-- A created project is self-orienting through its own `AGENTS.md`, intake, North Star, current state, and structured task state.
-- Common lifecycle folders are `00-PLANNING/`, `docs/`, `src/`, `tests/`, `build/`, and `dist/`.
-- WordPress source is bounded to `src/<plugin-slug>/` and its distribution contract produces a slug-rooted versioned ZIP.
-- Checkpoints capture repository facts without pretending those facts explain architectural intent.
+- Natural-language outcome can begin discovery without Shaun pre-selecting architecture.
+- Hybrid capability composition is explicit.
+- System state, failure boundaries, invariants, and unknowns are modelled before architecture.
+- Project presets still accelerate familiar WordPress/PHP/Python/TypeScript/API/dashboard work.
+- Generated projects carry discovery artifacts and `scripts/project-ready.mjs`.
+- Existing source/destination, decision-right, memory, checkpoint, and no-deploy boundaries remain intact.
 
 ## Known boundaries
 
-- The scaffold carries the minimum project-local guidance; it does not duplicate the entire reusable starter repository.
-- The WordPress package shape is defined, but a reproducible ZIP/checksum command remains a separate release-adapter slice.
-- The command does not deploy code into WordPress or another runtime.
-- A semantic memory update still belongs to the agent; deterministic code validates structure and captures facts.
-- Merging and releasing remain human decisions.
+- Legacy experimental router/writer/orchestrator scripts remain in the repository but are unsupported.
+- Structural gates cannot prove that semantic evidence is truthful; regression tests and review still matter.
+- Merge, deployment, provider use, and release remain Shaun-owned actions.
+- The active proof gate remains UNKNOWN until pull-request CI passes.
 
 ## Next action
 
-Review the focused project-lifecycle draft PR, then run one real WordPress project from its generated VS Code workspace through resume → plan → execute → verify → checkpoint → package. Implement the packaging adapter from the friction demonstrated by that trial.
+Open the infer-before-implement pull request, inspect Node 20/22/24 CI, repair any failed regression in place, then mark the proof gate completed. Do not merge until Shaun approves the PR.
