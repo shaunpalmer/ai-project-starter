@@ -1,48 +1,48 @@
 {
   "schema_version": 2,
   "id": "engineering-defaults-vcs-v0.4",
-  "goal": "Pre-decide routine engineering choices, bind ecosystem rules automatically, and make version control a deterministic part of project execution.",
-  "status": "blocked",
+  "goal": "Pre-decide routine engineering choices, bind ecosystem rules automatically, make version control deterministic, and hand those controls into generated product projects.",
+  "status": "completed",
   "alignment": [
     {
       "gate": "destination",
       "answer": "YES",
-      "evidence": "Work is isolated on athena/engineering-defaults-v0.4 and targets only the reusable harness."
+      "evidence": "Work is isolated on athena/engineering-defaults-v0.4 and targets only the reusable harness and its generated-project handoff contract."
     },
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "v0.3 contracts, WordPress Way, skill router, decision rights, old git-checkpoint.js, package scripts, tests, and external harness references were inspected."
+      "evidence": "v0.3 contracts, WordPress Way, skill router, decision rights, old git-checkpoint.js, package scripts, generated scaffold, tests, and external harness references were inspected."
     },
     {
       "gate": "system_model",
       "answer": "YES",
-      "evidence": "00-PLANNING/SYSTEM-MODEL.md confirms the low-question engineering-default and deterministic-VCS problem model."
+      "evidence": "00-PLANNING/SYSTEM-MODEL.md confirms the low-question engineering-default, deterministic-VCS, and generated-project handoff model."
     },
     {
       "gate": "boundaries",
       "answer": "YES",
-      "evidence": "This slice changes harness policy/control only; no deployment, provider spend, production mutation, remote repository creation, force push, merge, or release is authorised."
+      "evidence": "v0.4 does not create/delete remote repositories, force push, push managed work to main/master, merge, deploy, release, spend credits, or mutate production."
     },
     {
       "gate": "ownership",
       "answer": "YES",
-      "evidence": "ENGINEERING-DEFAULTS.md owns routine defaults, ecosystem skills own platform rules, vcs-control.js owns Git operations, and project-control remains the readiness/memory controller."
+      "evidence": "ENGINEERING-DEFAULTS.md owns routine defaults; ecosystem skills own platform rules; vcs-control.js owns Git operations; project-handoff.js copies proven controls into generated projects; project-control remains readiness/memory control."
     },
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "The first slice is engineering defaults, deterministic skill binding, one consolidated WordPress contract, a zero-dependency Git controller, and focused regression tests."
+      "evidence": "The slice implements engineering defaults, deterministic skill binding, one consolidated WordPress contract, VCS control, safe generated-project handoff, and focused regression proof without a new orchestration framework."
     },
     {
       "gate": "debt_control",
       "answer": "YES",
-      "evidence": "The design reuses Node 20+ and existing controllers, adds no runtime dependency, avoids embedding another harness, and leaves legacy git-checkpoint.js unsupported rather than routing new automation through it."
+      "evidence": "The design reuses Node 20+ and existing controllers, adds no runtime dependency, refuses to overwrite project-customised handoff files, and marks the legacy interactive git helper unsupported."
     },
     {
       "gate": "proof",
-      "answer": "UNKNOWN",
-      "evidence": "Implementation is on the v0.4 branch; full Node 20/22/24 GitHub Actions proof has not run yet."
+      "answer": "YES",
+      "evidence": "PR #5 GitHub Actions run #14 passed on Node 20, 22, and 24. Each job passed npm test (including VCS and generated-project handoff regressions), npm run control:verify, and npm run memory:resume."
     }
   ]
 }
