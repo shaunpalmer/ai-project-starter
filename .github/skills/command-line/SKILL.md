@@ -29,7 +29,7 @@ Use the local command line as a normal engineering interface. Detect the host an
 
 When Shaun says any equivalent of `harness update`, `upgrade the harness`, `update to the latest harness`, or `/harness update`, run the project-local harness updater rather than improvising file copies.
 
-When Shaun says `harness doctor`, `/doctor`, or asks whether the harness is healthy/current, run the project-local doctor command and report only actionable findings.
+When Shaun says `harness doctor`, `/doctor`, or asks whether the harness is healthy/current, run the correct doctor command and report only actionable findings.
 
 The canonical generated-project commands are:
 
@@ -39,7 +39,23 @@ node scripts/harness.mjs update --check
 node scripts/harness.mjs update --apply
 ```
 
-If the project predates the managed lifecycle manifest, run doctor first; the updater may adopt/reconstruct the legacy baseline before any replacement is attempted.
+For older projects, distinguish the lifecycle state before choosing a route:
+
+- existing `.harness/handoff.json` → update check/apply;
+- recognisable older managed harness version/history → adopt, then update;
+- pre-lifecycle product project with no handoff/version baseline, especially when still nested inside an old starter folder → migrate it into a new standalone project with the current starter controller, then run the local doctor.
+
+The starter-side migration command is:
+
+```bash
+npm run harness -- migrate \
+  --from /absolute/path/to/legacy/project \
+  --to /absolute/path/to/standalone/project \
+  --name "Project Name" \
+  --slug project-slug
+```
+
+Migration must preserve the old source, verify the copy, install current lifecycle controls, and roll back the new destination if migration fails. Never gut the old starter or move product files destructively just to upgrade the harness.
 
 ## Completion evidence
 
