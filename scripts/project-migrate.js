@@ -99,7 +99,7 @@ function inferType(source) {
     const stat = fs.statSync(file);
     if (stat.size > 1024 * 1024) continue;
     const content = fs.readFileSync(file, 'utf8');
-    if (/^\s*Plugin Name\s*:/mi.test(content)) return 'wordpress-plugin';
+    if (/^\s*\*?\s*Plugin Name\s*:/mi.test(content)) return 'wordpress-plugin';
   }
   return 'infer';
 }
