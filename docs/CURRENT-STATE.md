@@ -3,11 +3,11 @@
 Last verified: 2026-09-09
 Working branch: `athena/engineering-defaults-v0.4`
 Pull request: #5 — `Harness v0.4: engineering defaults and deterministic VCS`
-Verification: GitHub Actions run #15 passed on Node 20, 22, and 24 after the v0.4 active-task completion state was recorded. A final documentation-only run is expected after this current-state reconciliation.
+Verification: GitHub Actions run #17 passed on Node 20, 22, and 24 with `npm test`, `npm run control:verify`, and `npm run memory:resume` green across the matrix.
 
 ## Current truth
 
-Harness v0.3 is merged to `main`. Harness v0.4 is implemented on PR #5 and has passed the full supported CI matrix.
+Harness v0.3 is merged to `main`. Harness v0.4 is implemented and verified on PR #5.
 
 `ENGINEERING-DEFAULTS.md` defines the routine engineering operating policy: rule precedence, zero routine-question budget, language/runtime defaults, architecture defaults, dependency/persistence/failure/testing rules, and version-control expectations.
 
@@ -39,4 +39,4 @@ The WordPress Way has been consolidated into one authoritative non-duplicated ru
 
 ## Next action
 
-Finish the final PR #5 CI check after this documentation reconciliation, mark the PR ready for review, and leave merge to Shaun. After merge, run three fixed acceptance briefs — WordPress plugin, scraping/ingestion pipeline, and automation tool — and score question count, architecture fit, completeness, verification, manual corrections, and Git recoverability against `docs/QUALITY-BENCHMARK.md`.
+PR #5 is ready for Shaun's review and merge decision. After merge, run three fixed acceptance briefs — WordPress plugin, scraping/ingestion pipeline, and automation tool — and score question count, architecture fit, completeness, verification, manual corrections, and Git recoverability against `docs/QUALITY-BENCHMARK.md`.
