@@ -34,9 +34,7 @@ function parseArgs(argv) {
     if (next && !next.startsWith('--')) {
       result[key] = next;
       i += 1;
-    } else {
-      result[key] = true;
-    }
+    } else result[key] = true;
   }
   return result;
 }
@@ -57,6 +55,25 @@ function run(command, args, cwd = ROOT, options = {}) {
     status: result.status,
     stdout: (result.stdout ?? '').trim(),
     stderr: (result.stderr ?? '').trim(),
+  };
+}
+
+function runRaw(command, args, cwd = ROOT, options = {}) {
+  const result = spawnSync(command, args, {
+    cwd,
+    encoding: null,
+    env: NON_INTERACTIVE_ENV,
+    timeout: options.timeout ?? 30000,
+  });
+  if (result.error) throw new Error(`${command} failed: ${result.error.message}`);
+  if (result.status !== 0 && !options.allowFailure) {
+    const detail = Buffer.concat([result.stderr || Buffer.alloc(0), result.stdout || Buffer.alloc(0)]).toString('utf8').trim();
+    throw new Error(`${command} ${args.join(' ')} failed: ${detail || `exit ${result.status}`}`);
+  }
+  return {
+    status: result.status,
+    stdout: result.stdout || Buffer.alloc(0),
+    stderr: result.stderr || Buffer.alloc(0),
   };
 }
 
@@ -92,7 +109,7 @@ function ensureInside(root, relativePath) {
   const absolute = path.resolve(root, relativePath);
   const relative = path.relative(root, absolute);
   if (relative === '' || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-    throw new Error(`Managed path escapes project root: ${relativePath}`);
+    throw new Error(`Managed path escapes root: ${relativePath}`);
   }
   return absolute;
 }
@@ -120,10 +137,7 @@ function gitClean(root) {
 function gitIdentity(root) {
   const name = git(['config', '--get', 'user.name'], root, { allowFailure: true });
   const email = git(['config', '--get', 'user.email'], root, { allowFailure: true });
-  return {
-    name: name.status === 0 ? name.stdout : null,
-    email: email.status === 0 ? email.stdout : null,
-  };
+  return { name: name.status === 0 ? name.stdout : null, email: email.status === 0 ? email.stdout : null };
 }
 
 function loadManifest(sourceRoot) {
@@ -177,9 +191,7 @@ function baselinePath(project, targetPath) {
 }
 
 function fileContent(absolutePath) {
-  return fs.existsSync(absolutePath) && fs.statSync(absolutePath).isFile()
-    ? fs.readFileSync(absolutePath)
-    : null;
+  return fs.existsSync(absolutePath) && fs.statSync(absolutePath).isFile() ? fs.readFileSync(absolutePath) : null;
 }
 
 function sourceContent(sourceRoot, sourcePath) {
@@ -187,9 +199,9 @@ function sourceContent(sourceRoot, sourcePath) {
 }
 
 function gitShow(sourceRoot, commit, sourcePath) {
-  if (!commit || commit === 'filesystem') return null;
-  const result = git(['show', `${commit}:${slash(sourcePath)}`], sourceRoot, { allowFailure: true, timeout: 20000 });
-  return result.status === 0 ? Buffer.from(result.stdout + (result.stdout ? '\n' : ''), 'utf8') : null;
+  if (!commit || commit === 'filesystem' || commit === 'unavailable') return null;
+  const result = runRaw('git', ['show', `${commit}:${slash(sourcePath)}`], sourceRoot, { allowFailure: true, timeout: 20000 });
+  return result.status === 0 ? result.stdout : null;
 }
 
 function bufferEqual(a, b) {
@@ -206,10 +218,10 @@ function mergeThreeWay(local, base, incoming) {
     fs.writeFileSync(localPath, local);
     fs.writeFileSync(basePath, base);
     fs.writeFileSync(incomingPath, incoming);
-    const result = run('git', ['merge-file', '-p', localPath, basePath, incomingPath], temp, { allowFailure: true });
+    const result = runRaw('git', ['merge-file', '-p', localPath, basePath, incomingPath], temp, { allowFailure: true });
     return {
       clean: result.status === 0,
-      content: Buffer.from(result.stdout, 'utf8'),
+      content: result.stdout,
       evidence: result.status === 0 ? 'git-merge-file-clean' : 'git-merge-file-conflict',
     };
   } finally {
@@ -218,8 +230,7 @@ function mergeThreeWay(local, base, incoming) {
 }
 
 function normalizeHandoff(project, source) {
-  const handoffPath = path.join(project, HANDOFF_RELATIVE);
-  const handoff = readJson(handoffPath, false);
+  const handoff = readJson(path.join(project, HANDOFF_RELATIVE), false);
   if (!handoff) return null;
   if (handoff.schema_version === 2 && Array.isArray(handoff.files)) return handoff;
   if (handoff.schema_version !== 1) throw new Error(`Unsupported handoff schema: ${handoff.schema_version}`);
@@ -228,11 +239,12 @@ function normalizeHandoff(project, source) {
   const previousCommit = handoff.harness_head || null;
   const installedTargets = new Set(Array.isArray(handoff.installed) ? handoff.installed : []);
   const files = [];
+  const reconstructed = {};
   for (const item of latestManifest.files) {
     if (!installedTargets.has(item.target_path)) continue;
     const local = fileContent(ensureInside(project, item.target_path));
-    let base = null;
-    if (previousCommit && previousCommit !== 'unavailable') base = gitShow(source.root, previousCommit, item.source_path);
+    const base = previousCommit ? gitShow(source.root, previousCommit, item.source_path) : null;
+    if (base) reconstructed[item.target_path] = base.toString('base64');
     files.push({
       source_path: item.source_path,
       target_path: item.target_path,
@@ -241,11 +253,6 @@ function normalizeHandoff(project, source) {
       baseline_origin: base ? 'reconstructed-source-commit' : 'unknown',
       local_sha256_at_migration: local ? sha256(local) : null,
     });
-    if (base) {
-      const target = baselinePath(project, item.target_path);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(target, base);
-    }
   }
   return {
     schema_version: 2,
@@ -257,7 +264,19 @@ function normalizeHandoff(project, source) {
     },
     files,
     migrated_from_schema: 1,
+    reconstructed_baselines: reconstructed,
   };
+}
+
+function baselineFor(project, source, handoff, prior, item) {
+  let base = fileContent(baselinePath(project, item.target_path));
+  if (base) return base;
+  const encoded = handoff?.reconstructed_baselines?.[item.target_path];
+  if (encoded) return Buffer.from(encoded, 'base64');
+  if (prior?.baseline_sha256 && handoff?.source?.commit) {
+    base = gitShow(source.root, handoff.source.commit, prior.source_path || item.source_path);
+  }
+  return base;
 }
 
 function planUpdate(project, source, handoff, manifest) {
@@ -266,57 +285,36 @@ function planUpdate(project, source, handoff, manifest) {
   const plan = [];
 
   for (const item of manifest.files) {
-    const localPath = ensureInside(project, item.target_path);
-    const local = fileContent(localPath);
+    const local = fileContent(ensureInside(project, item.target_path));
     const incoming = sourceContent(source.root, item.source_path);
     if (incoming === null) throw new Error(`Latest manifest points to missing source file: ${item.source_path}`);
-
-    let base = fileContent(baselinePath(project, item.target_path));
     const prior = previous.get(item.target_path);
-    if (base === null && prior?.baseline_sha256 && handoff?.source?.commit) {
-      base = gitShow(source.root, handoff.source.commit, prior.source_path || item.source_path);
-    }
+    const base = baselineFor(project, source, handoff, prior, item);
 
     let action = 'unchanged';
     let result = local;
-    let reason = 'local-and-incoming-match';
+    let reason = 'already-current';
 
     if (base === null) {
       if (local === null) {
-        action = 'add';
-        result = incoming;
-        reason = 'new-upstream-managed-file';
+        action = 'add'; result = incoming; reason = 'new-upstream-managed-file';
       } else if (bufferEqual(local, incoming)) {
-        action = 'baseline';
-        result = local;
-        reason = 'local-matches-incoming';
+        action = 'baseline'; result = local; reason = 'local-matches-incoming';
       } else {
-        action = 'conflict';
-        result = null;
-        reason = 'no-trusted-baseline-for-existing-local-file';
+        action = 'conflict'; result = null; reason = 'no-trusted-baseline-for-existing-local-file';
       }
     } else if (local === null) {
       if (bufferEqual(incoming, base)) {
-        action = 'preserve-local-deletion';
-        result = null;
-        reason = 'project-deleted-file-upstream-unchanged';
+        action = 'preserve-local-deletion'; result = null; reason = 'project-deleted-file-upstream-unchanged';
       } else {
-        action = 'conflict';
-        result = null;
-        reason = 'project-deleted-file-and-upstream-changed';
+        action = 'conflict'; result = null; reason = 'project-deleted-file-and-upstream-changed';
       }
     } else if (bufferEqual(local, incoming)) {
-      action = 'unchanged';
-      result = local;
-      reason = 'already-current';
+      action = 'unchanged'; result = local; reason = 'already-current';
     } else if (bufferEqual(local, base)) {
-      action = 'replace';
-      result = incoming;
-      reason = 'upstream-only-change';
+      action = 'replace'; result = incoming; reason = 'upstream-only-change';
     } else if (bufferEqual(incoming, base)) {
-      action = 'preserve-local';
-      result = local;
-      reason = 'project-only-change';
+      action = 'preserve-local'; result = local; reason = 'project-only-change';
     } else {
       const merge = mergeThreeWay(local, base, incoming);
       action = merge.clean ? 'merge' : 'conflict';
@@ -340,13 +338,7 @@ function planUpdate(project, source, handoff, manifest) {
 
   for (const prior of previous.values()) {
     if (!currentTargets.has(prior.target_path)) {
-      plan.push({
-        ...prior,
-        action: 'deprecated',
-        reason: 'removed-from-latest-manifest-preserved-locally',
-        result: fileContent(ensureInside(project, prior.target_path)),
-        incoming: null,
-      });
+      plan.push({ ...prior, action: 'deprecated', reason: 'removed-upstream-preserved-locally', result: fileContent(ensureInside(project, prior.target_path)), incoming: null });
     }
   }
   return plan;
@@ -360,26 +352,24 @@ function planSummary(plan) {
   return { counts, changes, conflicts, safe_to_apply: conflicts.length === 0 };
 }
 
-function ensureUpdateBranch(project, version) {
+function ensureLifecycleBranch(project, branchName) {
   const root = repoRoot(project);
-  if (!root || root !== path.resolve(project)) throw new Error('Harness update requires the project root to be its own Git repository.');
-  if (!gitClean(root)) throw new Error('Harness update requires a clean worktree. Checkpoint product work first.');
+  if (!root || root !== path.resolve(project)) throw new Error('Harness lifecycle requires the project root to be its own Git repository.');
+  if (!gitClean(root)) throw new Error('Harness lifecycle requires a clean worktree. Checkpoint product work first.');
   const identity = gitIdentity(root);
-  if (!identity.name || !identity.email) throw new Error('Git user.name and user.email must be configured before harness update.');
+  if (!identity.name || !identity.email) throw new Error('Git user.name and user.email must be configured before harness lifecycle writes.');
   const branch = currentBranch(root);
-  if (!branch) throw new Error('Detached HEAD is not supported for harness update.');
-  const updateBranch = `harness/update-${version}`;
-  if (branch === updateBranch) return { root, branch, action: 'already-on-update-branch' };
-  const exists = git(['show-ref', '--verify', '--quiet', `refs/heads/${updateBranch}`], root, { allowFailure: true }).status === 0;
-  if (exists) throw new Error(`Update branch already exists: ${updateBranch}. Resolve or remove it before retrying.`);
-  git(['switch', '-c', updateBranch], root);
-  return { root, branch: updateBranch, action: PROTECTED_BRANCHES.has(branch) ? 'branched-from-protected' : 'isolated-update-branch' };
+  if (!branch) throw new Error('Detached HEAD is not supported for harness lifecycle writes.');
+  if (branch === branchName) return { root, branch, action: 'already-on-lifecycle-branch' };
+  const exists = git(['show-ref', '--verify', '--quiet', `refs/heads/${branchName}`], root, { allowFailure: true }).status === 0;
+  if (exists) throw new Error(`Lifecycle branch already exists: ${branchName}. Resolve or remove it before retrying.`);
+  git(['switch', '-c', branchName], root);
+  return { root, branch: branchName, action: PROTECTED_BRANCHES.has(branch) ? 'branched-from-protected' : 'isolated-lifecycle-branch' };
 }
 
 function writeBaseline(project, targetPath, incoming) {
   const target = baselinePath(project, targetPath);
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  if (incoming === null) return;
   fs.writeFileSync(target, incoming);
 }
 
@@ -396,17 +386,28 @@ function handoffFromPlan(source, manifest, plan) {
       source_path: item.source_path,
       target_path: item.target_path,
       ownership: item.ownership,
-      baseline_sha256: item.incoming ? sha256(item.incoming) : null,
+      baseline_sha256: sha256(item.incoming),
       baseline_origin: 'upstream',
     })),
     updated_at: new Date().toISOString(),
   };
 }
 
+function checkpoint(project, message, touched) {
+  const unique = [...new Set(touched)];
+  git(['add', '--', ...unique], project);
+  const staged = git(['diff', '--cached', '--name-only'], project).stdout.split(/\r?\n/).filter(Boolean);
+  const unexpected = staged.filter((file) => !unique.includes(file));
+  if (unexpected.length) throw new Error(`Lifecycle staging escaped intended files: ${unexpected.join(', ')}`);
+  if (!staged.length) return null;
+  git(['commit', '-m', message], project);
+  return git(['rev-parse', 'HEAD'], project).stdout;
+}
+
 function applyPlan(project, source, manifest, plan) {
   const summary = planSummary(plan);
   if (!summary.safe_to_apply) throw new Error(`Harness update has ${summary.conflicts.length} unresolved conflict(s); no project files were changed.`);
-  const vcs = ensureUpdateBranch(project, manifest.harness_version);
+  const branch = ensureLifecycleBranch(project, `harness/update-${manifest.harness_version}`);
   const touched = [];
 
   for (const item of plan) {
@@ -429,29 +430,21 @@ function applyPlan(project, source, manifest, plan) {
   touched.push(HANDOFF_RELATIVE);
 
   const diffCheck = git(['diff', '--check'], project, { allowFailure: true });
-  if (diffCheck.status !== 0) throw new Error(`Update produced invalid whitespace/conflict evidence: ${diffCheck.stdout || diffCheck.stderr}`);
-
-  const unique = [...new Set(touched)];
-  git(['add', '--', ...unique], project);
-  const staged = git(['diff', '--cached', '--name-only'], project).stdout.split(/\r?\n/).filter(Boolean);
-  const unexpected = staged.filter((file) => !unique.includes(file));
-  if (unexpected.length) throw new Error(`Harness update staging escaped the managed file set: ${unexpected.join(', ')}`);
-  if (staged.length) git(['commit', '-m', `Update harness to ${manifest.harness_version}`], project);
+  if (diffCheck.status !== 0) throw new Error(`Update failed git diff --check: ${diffCheck.stdout || diffCheck.stderr}`);
+  const commit = checkpoint(project, `Update harness to ${manifest.harness_version}`, touched);
 
   return {
     action: 'updated',
     version: manifest.harness_version,
     source_commit: source.commit,
-    branch: vcs.branch,
+    branch: branch.branch,
     files_changed: summary.changes,
-    checkpoint: staged.length ? git(['rev-parse', 'HEAD'], project).stdout : null,
+    checkpoint: commit,
   };
 }
 
 function localPackageVersion(project) {
-  const packagePath = path.join(project, 'package.json');
-  const packageJson = readJson(packagePath, false);
-  return packageJson?.version || null;
+  return readJson(path.join(project, 'package.json'), false)?.version || null;
 }
 
 function findCommitForVersion(sourceRoot, version) {
@@ -459,31 +452,34 @@ function findCommitForVersion(sourceRoot, version) {
   const log = git(['log', '--format=%H', '--all', '--', 'package.json'], sourceRoot, { allowFailure: true, timeout: 30000 });
   if (log.status !== 0) return null;
   for (const commit of log.stdout.split(/\r?\n/).filter(Boolean)) {
-    const shown = git(['show', `${commit}:package.json`], sourceRoot, { allowFailure: true });
+    const shown = runRaw('git', ['show', `${commit}:package.json`], sourceRoot, { allowFailure: true });
     if (shown.status !== 0) continue;
     try {
-      if (JSON.parse(shown.stdout).version === version) return commit;
+      if (JSON.parse(shown.stdout.toString('utf8')).version === version) return commit;
     } catch {
-      // Ignore historical malformed package metadata.
+      // Ignore historical malformed metadata.
     }
   }
   return null;
 }
 
 function adopt(project, source) {
-  if (fs.existsSync(path.join(project, HANDOFF_RELATIVE))) throw new Error('This project already has a harness handoff manifest; run update --check instead.');
+  if (fs.existsSync(path.join(project, HANDOFF_RELATIVE))) throw new Error('Lifecycle handoff already exists; run update --check instead.');
   const manifest = loadManifest(source.root);
   const version = localPackageVersion(project);
   const baselineCommit = findCommitForVersion(source.root, version);
-  if (!baselineCommit) throw new Error('Cannot establish a trusted legacy baseline automatically. Provide a project with a recognisable harness package version or migrate manually; no files were changed.');
-
+  if (!baselineCommit) throw new Error('Cannot establish a trusted legacy baseline automatically. No files were changed.');
+  const branch = ensureLifecycleBranch(project, `harness/adopt-${version}`);
   const files = [];
+  const touched = [];
+
   for (const item of manifest.files) {
     const base = gitShow(source.root, baselineCommit, item.source_path);
     const local = fileContent(ensureInside(project, item.target_path));
     if (base === null && local === null) continue;
     if (base !== null) {
       writeBaseline(project, item.target_path, base);
+      touched.push(slash(path.relative(project, baselinePath(project, item.target_path))));
       files.push({
         source_path: item.source_path,
         target_path: item.target_path,
@@ -508,7 +504,9 @@ function adopt(project, source) {
   const handoffPath = path.join(project, HANDOFF_RELATIVE);
   fs.mkdirSync(path.dirname(handoffPath), { recursive: true });
   fs.writeFileSync(handoffPath, `${JSON.stringify(handoff, null, 2)}\n`, { flag: 'wx' });
-  console.log(JSON.stringify({ action: 'adopted', installed_version: version, baseline_commit: baselineCommit, managed_files: files.length, next: 'Run harness update --check.' }, null, 2));
+  touched.push(HANDOFF_RELATIVE);
+  const commit = checkpoint(project, `Adopt harness lifecycle baseline ${version}`, touched);
+  console.log(JSON.stringify({ action: 'adopted', installed_version: version, baseline_commit: baselineCommit, branch: branch.branch, checkpoint: commit, managed_files: files.length, next: 'Run harness update --check.' }, null, 2));
 }
 
 function doctor(project, args) {
@@ -567,7 +565,7 @@ function update(project, args) {
     const existing = readJson(path.join(project, HANDOFF_RELATIVE), false);
     source = acquireSource(args, existing);
     const manifest = loadManifest(source.root);
-    let handoff = normalizeHandoff(project, source);
+    const handoff = normalizeHandoff(project, source);
     if (!handoff) throw new Error('Project has no lifecycle handoff manifest. Run `harness adopt` first.');
     const plan = planUpdate(project, source, handoff, manifest);
     const summary = planSummary(plan);
@@ -580,16 +578,16 @@ function update(project, args) {
     if (args.apply) {
       const result = applyPlan(project, source, manifest, plan);
       console.log(JSON.stringify({ ...report, ...result }, null, 2));
-      return;
+    } else {
+      console.log(JSON.stringify({ action: 'check', ...report, next: summary.safe_to_apply ? 'Run harness update --apply.' : 'Resolve the reported conflict(s) before applying.' }, null, 2));
     }
-    console.log(JSON.stringify({ action: 'check', ...report, next: summary.safe_to_apply ? 'Run harness update --apply.' : 'Resolve the reported conflict(s) before applying.' }, null, 2));
   } finally {
     source?.cleanup?.();
   }
 }
 
 function usage() {
-  console.log(`Usage:\n  node scripts/harness-update.js doctor [--online] [--cwd /project]\n  node scripts/harness-update.js update --check [--source-root /harness | --repository <git-url> --ref main]\n  node scripts/harness-update.js update --apply [source options]\n  node scripts/harness-update.js adopt [source options]\n\nUpdate is three-way: installed baseline vs project-local file vs latest upstream file. Conflicts block all project-file replacement.`);
+  console.log(`Usage:\n  node scripts/harness-update.js doctor [--online] [--cwd /project]\n  node scripts/harness-update.js update --check [--source-root /harness | --repository <git-url> --ref main]\n  node scripts/harness-update.js update --apply [source options]\n  node scripts/harness-update.js adopt [source options]\n\nUpdate uses a three-way comparison: installed baseline vs project-local file vs latest upstream file. Conflicts block project-file replacement.`);
 }
 
 function main() {
