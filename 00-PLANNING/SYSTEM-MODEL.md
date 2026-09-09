@@ -4,79 +4,82 @@ MODEL_STATUS: CONFIRMED
 
 ## Goal
 
-Make the harness behave like an engineering operating system: infer routine technical defaults, bind mature ecosystem rules automatically, keep meaningful work under recoverable version control, and minimise questions to Shaun without sacrificing architecture quality.
+Make embedded/generated harnesses safely upgradeable while preserving project-local customisation, and make command-line operation a routine first-class capability of the harness.
 
 ## Inputs
 
-- Shaun's natural-language project brief and feature list.
-- Confirmed system-model evidence from the target project.
-- Existing repository/runtime conventions and accepted ADRs.
-- `ENGINEERING-DEFAULTS.md`.
-- Ecosystem skills such as The WordPress Way and scraping-pipeline guidance.
-- Local Git state and existing machine Git/GitHub authentication.
+- Shaun's natural-language lifecycle commands such as `harness update`, `upgrade the harness`, `harness doctor`, and `/doctor`.
+- Existing project-local harness files and project-owned customisations.
+- `.harness/handoff.json` lifecycle state when present.
+- `.harness/baseline/` installed snapshots.
+- Latest upstream `HARNESS-MANIFEST.json` and managed source files.
+- Git repository state, identity, history, and existing machine authentication.
+- Local OS/runtime/package-manager/tool evidence.
 
 ## Outputs
 
-- Routine engineering choices resolved without user interruption.
-- Deterministic skill binding for evidenced capabilities.
-- Ecosystem-correct implementation defaults for WordPress, scraping, and automation work.
-- Non-interactive Git preflight, safe work branches, focused checkpoints, remote verification, and authorised feature-branch pushes.
-- A measurable quality target based on low question count, complete implementation, proof, and recoverability.
+- Non-mutating lifecycle health/update reports.
+- Deterministic base/local/incoming comparison for managed harness files.
+- Automatic upstream-only replacement, project-only preservation, new-file addition, and clean three-way merge.
+- Explicit blocking conflicts instead of destructive overwrite.
+- Isolated lifecycle Git branches and focused checkpoints.
+- Conservative legacy adoption from a trusted historical harness version.
+- A command-line operating policy for project-scoped install/update work.
 
 ## Capabilities
 
-- Engineering-default resolution with explicit precedence.
-- Zero-question handling of routine implementation choices.
-- WordPress-specific rule binding.
-- Scraping/automation runtime defaults.
-- Version-control preflight and repository initialisation.
-- Safe branch management.
-- Focused file staging and checkpoint commits.
-- Existing-credential remote verification.
-- Non-default branch push policy.
-- Regression proof across supported Node versions.
+- Versioned harness manifest and file ownership.
+- Installed baseline snapshotting.
+- Three-way merge planning.
+- Conflict detection and non-destructive deprecation.
+- Legacy handoff migration and package-version baseline reconstruction.
+- Git branch/checkpoint safety.
+- CLI/tool/runtime/package-manager discovery.
+- Natural-language lifecycle command routing.
+- Generated-project lifecycle handoff.
+- Node 20+ regression proof.
 
 ## Data flow
 
-Natural-language intent -> confirmed system model -> engineering defaults + required skills -> architecture hypothesis -> safe Git work branch -> implementation slice -> verification -> focused checkpoint -> optional authorised feature-branch push -> next slice / owner merge decision.
+Project request -> local doctor/state inspection -> latest harness source -> manifest comparison -> base/local/incoming plan -> safe/no-safe decision -> lifecycle Git branch -> apply deterministic changes -> refresh baselines/handoff -> verification -> focused checkpoint.
 
 ## State and persistence
 
-- Stable purpose: `docs/NORTH-STAR.md`.
-- Current truth: `docs/CURRENT-STATE.md`.
-- Problem/domain model: `00-PLANNING/SYSTEM-MODEL.md`.
-- Proposed route: `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`.
-- Routine engineering policy: `ENGINEERING-DEFAULTS.md`.
-- Decision authority: `docs/DECISION-RIGHTS.md`.
-- Active readiness: `.harness/state/active-task.json`.
-- Exact implementation history: Git.
+- Upstream ownership/version declaration: `HARNESS-MANIFEST.json`.
+- Project installed lifecycle state: `.harness/handoff.json`.
+- Exact installed file baselines: `.harness/baseline/`.
+- Routine engineering/CLI policy: `ENGINEERING-DEFAULTS.md` and `.github/skills/command-line/SKILL.md`.
+- Lifecycle design: `docs/HARNESS-LIFECYCLE.md` and ADR-0005.
+- Product/project truth remains in project-owned planning/state/source files.
+- Exact history and recovery remain in Git.
 
 ## Failure boundaries
 
-- A routine engineering choice must not be bounced back to Shaun when evidence/defaults already decide it.
-- Defaults must not override stronger repository configuration or accepted ADRs.
-- Skill binding must not be driven only by a project-type label.
-- Version-control commands must not prompt interactively, expose credentials, stage the whole worktree, force push, or push managed work directly to `main`/`master`.
-- Missing Git identity or required remote/authentication must fail explicitly rather than freeze the loop.
-- Creating/deleting a remote repository, merging, releasing, deploying, and destructive history edits remain owner-controlled.
+- `update --check` must not mutate project files, branches, or lifecycle state.
+- Existing local edits must never be treated as disposable merely because the harness changed upstream.
+- A real three-way conflict blocks replacement; no partial blind overwrite is allowed.
+- Removed upstream files are preserved locally rather than automatically deleted.
+- Updates require a clean project Git worktree and configured Git identity before writes.
+- Missing command-line tools must be reported as unavailable rather than causing hidden prompts or crashes.
+- Credentials are never embedded or requested for routine Git/CLI operation.
+- `sudo`, machine-wide package/runtime mutation, force push, default-branch managed push, merge, deploy, release, and production mutation remain outside routine lifecycle authority.
 
 ## Invariants
 
-- Shaun keeps consequential product/architecture deviations, provider/cost/security boundaries, destructive operations, merge, deployment, and release authority.
-- Athena decides routine/reversible implementation and established-default choices.
-- WordPress work follows mature WordPress conventions by default.
-- New scraping/ingestion work defaults to Python unless evidence establishes another stack.
-- The harness controller remains zero-runtime-dependency Node 20+.
-- Existing infer-before-implement discovery and eight readiness gates remain intact.
+- Project-owned product code, planning, decisions, and business state are never harness-update targets.
+- Managed lifecycle operations remain zero-runtime-dependency Node 20+ plus Git.
+- Existing v0.4 engineering defaults, skill binding, version-control safety, and infer-before-implement gates remain intact.
+- Deterministic code handles version comparison, file ownership, branching, merging, and checkpoints; AI handles only unresolved semantic conflicts.
+- Routine CLI use does not become a stream of questions to Shaun.
 
 ## Unknowns
 
-No product-policy unknown blocks this slice. Implementation quality is bounded by regression tests and GitHub Actions. A later acceptance benchmark should run the same harness against representative WordPress, scraping, and automation briefs and score question count, completeness, architecture fit, and manual corrections.
+No blocking design unknown remains. The remaining proof condition is the full regression/CI suite on Node 20, 22, and 24 after final documentation/state reconciliation.
 
 ## Evidence
 
-- Shaun's successful WordPress run demonstrated the desired experience: a large brief, very few questions, and rapid complete implementation.
-- Existing `.github/skills/wordpress-way.md` already contained strong WordPress defaults but duplicated its rule set internally.
-- Existing `scripts/git-checkpoint.js` uses interactive `readline`, broad `git add .`, timestamp commits, and unconditional push, making it unsuitable for a deterministic agent loop.
-- `docs/DECISION-RIGHTS.md` already delegates focused commits/checkpoints to Athena but previously treated every language choice as consequential, conflicting with mature ecosystem defaults.
-- v0.3 established system modelling before architecture, capability composition, local readiness proof, and CI regression gates.
+- v0.4 generated-project handoff already recorded harness source/version information and copied managed rules/controllers.
+- The existing handoff refusal to overwrite customised files proved the need for a real upgrade path rather than reinstall/copy semantics.
+- Git provides a native deterministic three-way merge primitive (`git merge-file`) and recoverable lifecycle branches/checkpoints.
+- PR #6 regression tests cover non-mutating checks, upstream-only replacement, new-file addition, clean three-way merge, blocking conflicts, doctor behaviour, legacy adoption, and generated-project lifecycle handoff.
+- PR #6 Actions run #25 passed the implementation/test suite on Node 20, 22, and 24 before final documentation reconciliation.
