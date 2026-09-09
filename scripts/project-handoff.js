@@ -116,14 +116,17 @@ function appendAgentHandoff(projectRoot) {
 
 function runGit(args, cwd, allowFailure = false) {
   const result = spawnSync('git', args, { cwd, encoding: 'utf8', env: NON_INTERACTIVE_ENV, timeout: 30000 });
-  if (result.error) throw new Error(`git failed: ${result.error.message}`);
+  if (result.error) {
+    if (allowFailure) return { status: 127, stdout: '', stderr: result.error.message };
+    throw new Error(`git failed: ${result.error.message}`);
+  }
   if (result.status !== 0 && !allowFailure) throw new Error(`git ${args.join(' ')} failed: ${(result.stderr || result.stdout).trim()}`);
   return { status: result.status, stdout: (result.stdout || '').trim(), stderr: (result.stderr || '').trim() };
 }
 
 function ensureLocalGit(projectRoot) {
   const check = runGit(['rev-parse', '--show-toplevel'], projectRoot, true);
-  if (check.status === 0) return { action: 'already-initialized', repo_root: check.stdout };
+  if (check.status === 0) return { action: 'already-initialized', repo_root: check.stdout, branch: runGit(['branch', '--show-current'], projectRoot, true).stdout };
   const vcsScript = path.join(projectRoot, 'scripts', 'vcs-control.mjs');
   const result = spawnSync(process.execPath, [vcsScript, 'init', '--cwd', projectRoot, '--branch', 'work/bootstrap'], {
     cwd: projectRoot,
@@ -176,6 +179,47 @@ function writeHandoff(projectRoot, manifest, files) {
   return record;
 }
 
+function walkFiles(root, current = root, files = []) {
+  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    if (entry.name === '.git') continue;
+    const absolute = path.join(current, entry.name);
+    if (entry.isDirectory()) walkFiles(root, absolute, files);
+    else if (entry.isFile()) files.push(slash(path.relative(root, absolute)));
+  }
+  return files;
+}
+
+function bootstrapCheckpoint(projectRoot) {
+  const identity = {
+    name: runGit(['config', '--get', 'user.name'], projectRoot, true).stdout,
+    email: runGit(['config', '--get', 'user.email'], projectRoot, true).stdout,
+  };
+  if (!identity.name || !identity.email) {
+    return { action: 'pending-git-identity', message: 'Configure git user.name and user.email, then create the first focused project checkpoint.' };
+  }
+
+  const status = runGit(['status', '--porcelain'], projectRoot, true);
+  if (status.status !== 0) return { action: 'unavailable', message: status.stderr || 'git status failed' };
+  if (!status.stdout) {
+    const head = runGit(['rev-parse', 'HEAD'], projectRoot, true);
+    return { action: 'already-clean', head: head.status === 0 ? head.stdout : null };
+  }
+
+  const candidates = walkFiles(projectRoot).filter((relativePath) => {
+    const ignored = runGit(['check-ignore', '-q', '--', relativePath], projectRoot, true);
+    return ignored.status !== 0;
+  });
+  if (!candidates.length) return { action: 'nothing-to-checkpoint' };
+
+  runGit(['add', '--', ...candidates], projectRoot);
+  const staged = runGit(['diff', '--cached', '--name-only'], projectRoot).stdout.split(/\r?\n/).filter(Boolean);
+  if (!staged.length) return { action: 'nothing-to-checkpoint' };
+  const unexpected = staged.filter((file) => !candidates.includes(file));
+  if (unexpected.length) throw new Error(`Bootstrap staging escaped the explicit file set: ${unexpected.join(', ')}`);
+  runGit(['commit', '-m', 'Bootstrap harness project'], projectRoot);
+  return { action: 'checkpoint-created', head: runGit(['rev-parse', 'HEAD'], projectRoot).stdout, files: staged };
+}
+
 function main() {
   const args = parseArgs(process.argv.slice(2));
   if (!args['project-root'] || typeof args['project-root'] !== 'string') throw new Error('Usage: node scripts/project-handoff.js --project-root /absolute/path');
@@ -190,13 +234,13 @@ function main() {
   const unchanged = [];
   const files = [];
   for (const entry of manifest.files) {
-    const content = copyManagedFile(projectRoot, entry, copied, unchanged);
-    writeBaseline(projectRoot, entry.target_path, content);
+    const fileContent = copyManagedFile(projectRoot, entry, copied, unchanged);
+    writeBaseline(projectRoot, entry.target_path, fileContent);
     files.push({
       source_path: entry.source_path,
       target_path: entry.target_path,
       ownership: entry.ownership,
-      baseline_sha256: sha256(content),
+      baseline_sha256: sha256(fileContent),
       baseline_origin: 'upstream',
     });
   }
@@ -204,6 +248,8 @@ function main() {
   const agentContract = appendAgentHandoff(projectRoot);
   const git = ensureLocalGit(projectRoot);
   const handoff = writeHandoff(projectRoot, manifest, files);
+  const checkpoint = bootstrapCheckpoint(projectRoot);
+
   console.log(JSON.stringify({
     project_root: projectRoot,
     harness_version: manifest.harness_version,
@@ -211,8 +257,11 @@ function main() {
     unchanged,
     agent_contract: agentContract,
     git,
+    checkpoint,
     handoff,
-    next_action: 'Run node scripts/harness.mjs doctor, then continue project discovery/execution on a safe non-default Git branch.',
+    next_action: checkpoint.action === 'pending-git-identity'
+      ? 'Configure Git identity, create the first focused checkpoint, run node scripts/harness.mjs doctor, then continue on the non-default branch.'
+      : 'Run node scripts/harness.mjs doctor, then continue project discovery/execution on the safe non-default Git branch.',
   }, null, 2));
 }
 
