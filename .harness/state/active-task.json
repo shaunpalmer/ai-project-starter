@@ -2,7 +2,7 @@
   "schema_version": 2,
   "id": "infer-before-implement",
   "goal": "Make unfamiliar and hybrid projects model the system before architecture or implementation is locked in.",
-  "status": "blocked",
+  "status": "completed",
   "alignment": [
     { "gate": "destination", "answer": "YES", "evidence": "Work is isolated on athena/infer-before-implement and targets only the reusable harness." },
     { "gate": "evidence", "answer": "YES", "evidence": "AGENTS, project types/intake, supported controller, generated scaffold, skills, tests, CI workflow, and the 2026-09-05 harness review were inspected." },
@@ -10,7 +10,7 @@
     { "gate": "boundaries", "answer": "YES", "evidence": "This slice strengthens discovery/readiness and generated-project handoff; it does not merge, deploy, release, spend credits, or mutate product projects." },
     { "gate": "ownership", "answer": "YES", "evidence": "scripts/project-control.js remains the supported control plane; planning artifacts own discovery; generated projects receive a local readiness helper." },
     { "gate": "minimum_slice", "answer": "YES", "evidence": "One schema/gate extension, two planning artifacts, preset-to-capability routing, generated-project verification, and focused regression proof address the observed failure without a new framework." },
-    { "gate": "debt_control", "answer": "YES", "evidence": "The change removes the supported unlock dependency on the known-broken legacy planning checker and leaves legacy experiments explicitly unsupported rather than expanding them." },
-    { "gate": "proof", "answer": "UNKNOWN", "evidence": "Implementation and regression cases are defined; PR CI on Node 20/22/24 must pass before this task can be marked completed." }
+    { "gate": "debt_control", "answer": "YES", "evidence": "The supported unlock no longer depends on the broken legacy planning checker; exact status-line validation closes the false-positive loophole found by CI; legacy experiments remain explicitly unsupported." },
+    { "gate": "proof", "answer": "YES", "evidence": "PR #4 Actions run #4 passed on Node 20, 22, and 24. Each matrix job passed npm test (21 tests), npm run control:verify, and npm run memory:resume after the status-line repair." }
   ]
 }
