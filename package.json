@@ -15,6 +15,7 @@
     "memory:checkpoint": "node scripts/project-control.js checkpoint",
     "decision": "node scripts/project-control.js decision",
     "destination": "node scripts/project-control.js destination",
+    "handoff": "node scripts/project-handoff.js",
     "vcs": "node scripts/vcs-control.js",
     "vcs:status": "node scripts/vcs-control.js status",
     "vcs:preflight": "node scripts/vcs-control.js preflight",
