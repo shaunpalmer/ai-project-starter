@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "harness_version": "0.5.0",
+  "source": {
+    "repository": "https://github.com/shaunpalmer/ai-project-starter.git",
+    "ref": "main"
+  },
+  "files": [
+    { "source_path": "ENGINEERING-DEFAULTS.md", "target_path": "ENGINEERING-DEFAULTS.md", "ownership": "managed" },
+    { "source_path": ".github/skills/skill-router/SKILL.md", "target_path": ".github/skills/skill-router/SKILL.md", "ownership": "managed" },
+    { "source_path": ".github/skills/complexity-brake/SKILL.md", "target_path": ".github/skills/complexity-brake/SKILL.md", "ownership": "managed" },
+    { "source_path": ".github/skills/project-memory/SKILL.md", "target_path": ".github/skills/project-memory/SKILL.md", "ownership": "managed" },
+    { "source_path": ".github/skills/architecture-canvas/SKILL.md", "target_path": ".github/skills/architecture-canvas/SKILL.md", "ownership": "managed" },
+    { "source_path": ".github/skills/scraping-pipeline/SKILL.md", "target_path": ".github/skills/scraping-pipeline/SKILL.md", "ownership": "managed" },
+    { "source_path": ".github/skills/wordpress-plugin/SKILL.md", "target_path": ".github/skills/wordpress-plugin/SKILL.md", "ownership": "managed" },
+    { "source_path": ".github/skills/wordpress-way.md", "target_path": ".github/skills/wordpress-way.md", "ownership": "managed" },
+    { "source_path": ".github/skills/oop-standards.md", "target_path": ".github/skills/oop-standards.md", "ownership": "managed" },
+    { "source_path": ".github/skills/command-line/SKILL.md", "target_path": ".github/skills/command-line/SKILL.md", "ownership": "managed" },
+    { "source_path": "scripts/vcs-control.js", "target_path": "scripts/vcs-control.mjs", "ownership": "managed" },
+    { "source_path": "scripts/harness-update.js", "target_path": "scripts/harness-update.mjs", "ownership": "managed" },
+    { "source_path": "scripts/harness.js", "target_path": "scripts/harness.mjs", "ownership": "managed" }
+  ],
+  "project_owned": [
+    "AGENTS.md",
+    "00-PLANNING/**",
+    "docs/NORTH-STAR.md",
+    "docs/CURRENT-STATE.md",
+    "docs/decisions/**",
+    ".harness/state/**",
+    "src/**",
+    "tests/**"
+  ]
+}
